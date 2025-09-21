@@ -19,7 +19,7 @@ import { addOutline } from "@/services/outlineStorage"
 import { colors } from "@/theme/colors"
 import { spacing } from "@/theme/spacing"
 
-interface Props extends AppStackScreenProps<"MarkdownImport"> { }
+interface Props extends AppStackScreenProps<"MarkdownImport"> {}
 
 type ImportMode = "file" | "clipboard" | "manual"
 

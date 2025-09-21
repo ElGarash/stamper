@@ -11,6 +11,8 @@ import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navig
 import Config from "@/config"
 import { ErrorBoundary } from "@/screens/ErrorScreen/ErrorBoundary"
 import { MarkdownImportScreen } from "@/screens/MarkdownImportScreen"
+import { OutlinePreviewScreen } from "@/screens/OutlinePreviewScreen"
+import { OutlinesListScreen } from "@/screens/OutlinesListScreen"
 import { WelcomeScreen } from "@/screens/WelcomeScreen"
 import { useAppTheme } from "@/theme/context"
 
@@ -28,6 +30,7 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 export type AppStackParamList = {
   Welcome: undefined
   OutlinesList: undefined
+  OutlinePreview: { outlineId: string }
   NotionOAuth: undefined
   NotionImport: undefined
   MarkdownImport: undefined
@@ -66,6 +69,8 @@ const AppStack = () => {
       initialRouteName="Welcome"
     >
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="OutlinesList" component={OutlinesListScreen} />
+      <Stack.Screen name="OutlinePreview" component={OutlinePreviewScreen} />
 
       {/** 🔥 Your screens go here */}
       <Stack.Screen name="MarkdownImport" component={MarkdownImportScreen} />

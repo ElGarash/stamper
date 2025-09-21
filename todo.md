@@ -8,20 +8,20 @@ This to-do list is based on the specification in `spec.md`.
 
 ## 1. Markdown List Import
 
-- [ ] Create markdown parser for bullet lists (`- item`, `* item`)
-- [ ] Create todo list parser (`- [ ] item`, `- [x] item`)
-- [ ] Support nested lists (sub-items under main topics)
-- [ ] Implement file picker for importing markdown files
-- [ ] Implement clipboard import for markdown text
-- [ ] Implement text input for pasting markdown lists
-- [ ] Create a local outline from imported markdown data
+- [x] Create markdown parser for bullet lists (`- item`, `* item`)
+- [x] Create todo list parser (`- [ ] item`, `- [x] item`)
+- [x] Support nested lists (sub-items under main topics)
+- [x] Implement file picker for importing markdown files
+- [x] Implement clipboard import for markdown text
+- [x] Implement text input for pasting markdown lists
+- [x] Create a local outline from imported markdown data
 
 ## 2. Outline Management
 
-- [ ] Create "Outlines List" screen
-  - [ ] Display imported and local outlines
-  - [ ] "Create New Outline" flow
-  - [ ] "Import from markdown/todo list" flow
+- [x] Create "Outlines List" screen
+  - [x] Display outlines
+  - [x] "Create New Outline" flow
+  - [x] Clicking on an outline opens it in preview mode
 - [ ] Create "Outline Editor" screen
   - [ ] Drag & drop items
   - [ ] Edit item titles inline

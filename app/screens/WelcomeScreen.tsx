@@ -26,6 +26,10 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = function WelcomeScreen(_pro
     navigation.navigate("MarkdownImport")
   }
 
+  function goToOutlines() {
+    navigation.navigate("OutlinesList")
+  }
+
   useHeader({}, [])
 
   const $bottomContainerInsets = useSafeAreaInsetsStyle(["bottom"])
@@ -51,6 +55,14 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = function WelcomeScreen(_pro
 
       <View style={themed([$bottomContainer, $bottomContainerInsets])}>
         <Text tx="welcomeScreen:postscript" size="md" />
+
+        <Button
+          testID="outlines-list-button"
+          preset="default"
+          text="View Outlines"
+          onPress={goToOutlines}
+          style={themed($outlinesButton)}
+        />
 
         <Button
           testID="next-screen-button"
@@ -99,4 +111,8 @@ const $welcomeFace: ImageStyle = {
 
 const $welcomeHeading: ThemedStyle<TextStyle> = ({ spacing }) => ({
   marginBottom: spacing.md,
+})
+
+const $outlinesButton: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+  marginBottom: spacing.sm,
 })
