@@ -8,5 +8,7 @@
 
 ## Development
 
-- To interact with the app use `mobile-mcp`.
+- Work in step by step, and validate each step before moving to the next one.
+- Ignore lint and formatting issues unless asked explicitly to fix them.
+- To interact with the app use `mcp-appium-visual`.
 - Always assume the Expo development is running and connect to the emulator.
