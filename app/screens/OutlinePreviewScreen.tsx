@@ -11,7 +11,7 @@ import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { loadOutlines } from "@/services/outlineStorage"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> {}
+interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> { }
 
 export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   const { route, navigation } = props
@@ -49,17 +49,9 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   const handleStartLecture = useCallback(() => {
     if (!outline) return
 
-    Alert.alert("Start Lecture", `Ready to start lecture for "${outline.title}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Start",
-        onPress: () => {
-          // TODO: Navigate to lecture screen with outline
-          Alert.alert("Coming Soon", "Lecture recording will be implemented next!")
-        },
-      },
-    ])
-  }, [outline])
+    // Navigate directly to lecture recording screen
+    navigation.navigate("LectureRecording", { outline })
+  }, [outline, navigation])
 
   const handleEdit = useCallback(() => {
     if (!outline) return

@@ -9,6 +9,7 @@
 ## Development
 
 - Work in step by step, and validate each step before moving to the next one.
-- Ignore lint and formatting issues unless asked explicitly to fix them.
+- Ignore lint and formatting issues Completely. Unless I ask explicitly to fix them.
+- If you want to access the logs use `npx react-native log-android`.
 - To interact with the app use `mcp-appium-visual`.
 - Always assume the Expo development is running and connect to the emulator.

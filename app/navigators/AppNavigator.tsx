@@ -10,6 +10,7 @@ import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navig
 
 import Config from "@/config"
 import { ErrorBoundary } from "@/screens/ErrorScreen/ErrorBoundary"
+import { LectureRecordingScreen } from "@/screens/LectureRecordingScreen"
 import { MarkdownImportScreen } from "@/screens/MarkdownImportScreen"
 import { OutlinePreviewScreen } from "@/screens/OutlinePreviewScreen"
 import { OutlinesListScreen } from "@/screens/OutlinesListScreen"
@@ -30,6 +31,7 @@ export type AppStackParamList = {
   Welcome: undefined
   OutlinesList: undefined
   OutlinePreview: { outlineId: string }
+  LectureRecording: { outline: { id: string; title: string; items: Array<{ id: string; title: string }> } }
   NotionOAuth: undefined
   NotionImport: undefined
   MarkdownImport: undefined
@@ -69,6 +71,7 @@ const AppStack = () => {
     >
       <Stack.Screen name="OutlinesList" component={OutlinesListScreen} />
       <Stack.Screen name="OutlinePreview" component={OutlinePreviewScreen} />
+      <Stack.Screen name="LectureRecording" component={LectureRecordingScreen} />
 
       {/** 🔥 Your screens go here */}
       <Stack.Screen name="MarkdownImport" component={MarkdownImportScreen} />
@@ -78,7 +81,7 @@ const AppStack = () => {
 }
 
 export interface NavigationProps
-  extends Partial<ComponentProps<typeof NavigationContainer<AppStackParamList>>> {}
+  extends Partial<ComponentProps<typeof NavigationContainer<AppStackParamList>>> { }
 
 export const AppNavigator = (props: NavigationProps) => {
   const { navigationTheme } = useAppTheme()
