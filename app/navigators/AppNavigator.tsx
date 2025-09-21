@@ -10,8 +10,7 @@ import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navig
 
 import Config from "@/config"
 import { ErrorBoundary } from "@/screens/ErrorScreen/ErrorBoundary"
-import { NotionImportScreen } from "@/screens/Notion/NotionImportScreen"
-import { NotionOAuthScreen } from "@/screens/Notion/NotionOAuthScreen"
+import { MarkdownImportScreen } from "@/screens/MarkdownImportScreen"
 import { WelcomeScreen } from "@/screens/WelcomeScreen"
 import { useAppTheme } from "@/theme/context"
 
@@ -28,8 +27,10 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
  */
 export type AppStackParamList = {
   Welcome: undefined
+  OutlinesList: undefined
   NotionOAuth: undefined
   NotionImport: undefined
+  MarkdownImport: undefined
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
@@ -67,8 +68,7 @@ const AppStack = () => {
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
 
       {/** 🔥 Your screens go here */}
-      <Stack.Screen name="NotionOAuth" component={NotionOAuthScreen} />
-      <Stack.Screen name="NotionImport" component={NotionImportScreen} />
+      <Stack.Screen name="MarkdownImport" component={MarkdownImportScreen} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )

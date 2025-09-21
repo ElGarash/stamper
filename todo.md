@@ -2,18 +2,26 @@
 
 This to-do list is based on the specification in `spec.md`.
 
-## 1. Notion Integration
+# Project To-Do
 
-- [ ] Sign in with Notion (OAuth2)
-- [ ] Make the user import a page
-- [ ] Parse a top-level bullet list into outline items
-- [ ] Create a local outline from imported data
+This to-do list is based on the specification in `spec.md`.
+
+## 1. Markdown List Import
+
+- [ ] Create markdown parser for bullet lists (`- item`, `* item`)
+- [ ] Create todo list parser (`- [ ] item`, `- [x] item`)
+- [ ] Support nested lists (sub-items under main topics)
+- [ ] Implement file picker for importing markdown files
+- [ ] Implement clipboard import for markdown text
+- [ ] Implement text input for pasting markdown lists
+- [ ] Create a local outline from imported markdown data
 
 ## 2. Outline Management
 
 - [ ] Create "Outlines List" screen
   - [ ] Display imported and local outlines
   - [ ] "Create New Outline" flow
+  - [ ] "Import from markdown/todo list" flow
 - [ ] Create "Outline Editor" screen
   - [ ] Drag & drop items
   - [ ] Edit item titles inline
@@ -49,7 +57,7 @@ This to-do list is based on the specification in `spec.md`.
 ## 7. Testing & QA
 
 - [ ] Unit tests for timestamp logging and export formatting
-- [ ] Integration tests for Notion import and data persistence
+- [ ] Integration tests for markdown import and data persistence
 - [ ] Manual QA of core UI flows
 
 ## 8. Cleanup

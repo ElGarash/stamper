@@ -12,6 +12,10 @@ A mobile app to speed up lecture post-production by:
 ## 2. User Stories
 
 1. As an instructor, I want to import a Notion page checklist so I don’t have to retype my outline.
+   - Parse markdown bullet lists (`- item`, `* item`) and todo lists (`- [ ] item`, `- [x] item`) into checklist items
+
+   - Support for nested lists (sub-items under main topics) instructor
+
 2. As an instructor, I want to manually create or edit my lecture checklist in the app.
 3. As an instructor, I want to start a live timer when my lecture begins.
 4. As an instructor, when I tick off a checklist item, I want the exact timestamp recorded.
