@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import { Alert, View, ScrollView, StyleSheet } from "react-native"
+import { Alert, View, StyleSheet } from "react-native"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
+import { Header } from "@/components/Header"
 import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import { TextField } from "@/components/TextField"
@@ -19,7 +20,7 @@ import { addOutline } from "@/services/outlineStorage"
 import { colors } from "@/theme/colors"
 import { spacing } from "@/theme/spacing"
 
-interface Props extends AppStackScreenProps<"MarkdownImport"> {}
+interface Props extends AppStackScreenProps<"MarkdownImport"> { }
 
 type ImportMode = "file" | "clipboard" | "manual"
 
@@ -306,9 +307,8 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
 
   return (
     <Screen preset="scroll" safeAreaEdges={["top"]}>
-      <View style={{ padding: spacing.lg }}>
-        <ScrollView showsVerticalScrollIndicator={false}>{renderContent()}</ScrollView>
-      </View>
+      <Header title="Import Markdown" leftIcon="back" onLeftPress={() => navigation.goBack()} />
+      <View style={styles.container}>{renderContent()}</View>
     </Screen>
   )
 }
@@ -324,6 +324,9 @@ const styles = StyleSheet.create({
   clipboardDescriptionText: {
     color: colors.textDim,
     marginBottom: spacing.lg,
+  },
+  container: {
+    padding: spacing.lg,
   },
   descriptionText: {
     color: colors.textDim,

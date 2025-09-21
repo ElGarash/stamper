@@ -13,7 +13,7 @@ import { deleteOutline, loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> {}
+interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> { }
 
 export const OutlinesListScreen: FC<OutlinesListScreenProps> = function OutlinesListScreen(props) {
   const { navigation } = props
@@ -90,14 +90,14 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
       text={outline.title}
       bottomSeparator
       onPress={() => handleOutlinePress(outline)}
-      rightIcon="caretRight"
-      LeftComponent={
+      RightComponent={
         <View style={themed($itemInfoContainer)}>
           <Text size="xs" style={themed($itemCount)}>
             {outline.items.length} items
           </Text>
         </View>
       }
+      containerStyle={themed($itemContainer)}
       onLongPress={() => handleDeleteOutline(outline.id, outline.title)}
     />
   )
@@ -125,13 +125,7 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
 
   return (
     <Screen preset="fixed" contentContainerStyle={themed($screenContainer)}>
-      <Header
-        title="Outlines"
-        leftIcon="back"
-        onLeftPress={() => navigation.navigate("Welcome")}
-        rightIcon="bell"
-        onRightPress={() => Alert.alert("Info", "Outline management screen")}
-      />
+      <Header title="Outlines" />
 
       <View style={themed($contentContainer)}>
         {outlines.length === 0 ? (
@@ -209,9 +203,14 @@ const $listContent: ViewStyle = {
   paddingBottom: spacing.lg,
 }
 
+const $itemContainer: ViewStyle = {
+  alignItems: "center",
+}
+
 const $itemInfoContainer: ViewStyle = {
-  marginRight: spacing.xs,
-  alignItems: "flex-end",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: 56, // Match the ListItem height
 }
 
 const $itemCount: ViewStyle = {

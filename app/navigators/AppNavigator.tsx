@@ -13,7 +13,6 @@ import { ErrorBoundary } from "@/screens/ErrorScreen/ErrorBoundary"
 import { MarkdownImportScreen } from "@/screens/MarkdownImportScreen"
 import { OutlinePreviewScreen } from "@/screens/OutlinePreviewScreen"
 import { OutlinesListScreen } from "@/screens/OutlinesListScreen"
-import { WelcomeScreen } from "@/screens/WelcomeScreen"
 import { useAppTheme } from "@/theme/context"
 
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
@@ -66,9 +65,8 @@ const AppStack = () => {
           backgroundColor: colors.background,
         },
       }}
-      initialRouteName="Welcome"
+      initialRouteName="OutlinesList"
     >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="OutlinesList" component={OutlinesListScreen} />
       <Stack.Screen name="OutlinePreview" component={OutlinePreviewScreen} />
 
