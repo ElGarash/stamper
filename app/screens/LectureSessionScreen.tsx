@@ -7,6 +7,7 @@ import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { loadLectureSessions } from "@/services/lectureSessionStorage"
+import { getOutlineById } from "@/services/outlineStorage"
 
 type Props = AppStackScreenProps<"LectureSession">
 
@@ -78,9 +79,15 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
   const sessions = loadLectureSessions()
   const session = sessions.find((s) => s.id === sessionId) as any | undefined
 
+  // Get outline items map for proper labels
+  const outline = session ? getOutlineById(session.outlineId) : null
+  const outlineItemsMap = outline
+    ? Object.fromEntries(outline.items.map((item) => [item.id, item.title]))
+    : {}
+
   const handleCopyTimestamps = () => {
     if (!session) return
-    const txt = formatYouTubeTimestamps(session)
+    const txt = formatYouTubeTimestamps(session, outlineItemsMap)
     Clipboard.setString(txt)
   }
 
@@ -92,7 +99,7 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
 
   return (
     <Screen preset="fixed">
-  <Header title="Session" leftIcon="back" onLeftPress={() => navigation.goBack()} />
+      <Header title="Session" leftIcon="back" onLeftPress={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.container}>
         {!session ? (
           <Text>Session not found</Text>
@@ -115,7 +122,7 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
 
             <View style={{ marginTop: 12 }}>
               <Text preset="subheading">YouTube Timestamps</Text>
-              <Text style={styles.code}>{formatYouTubeTimestamps(session)}</Text>
+              <Text style={styles.code}>{formatYouTubeTimestamps(session, outlineItemsMap)}</Text>
               <Button text="Copy Timestamps" onPress={handleCopyTimestamps} />
             </View>
 

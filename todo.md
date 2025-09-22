@@ -36,24 +36,13 @@ This to-do list is based on the specification in `spec.md`.
 - [x] If paused, show a full-screen backdrop filter, resume the timer on touch when paused
 - [x] Record the pause intervals to exclude from final timestamps
 - [x] Add Recorded Sessions list accessible from Outlines List screen, each outline shows its recorded sessions.
+- [x] Add a button to control the sort order of the recorded sessions (newest first or oldest first)
 
 ## 4. Export
 
 - [x] Add "Stop & Export" button on recording screen
-- [ ] Generate YouTube-friendly timestamp text block
-- [ ] Generate FFmpeg trimming command for non-paused segments
-
-## 5. Data Persistence
-
-- [ ] Set up SQLite storage via `react-native-sqlite-storage`
-- [ ] Define `Outline` and `LectureSession` models
-- [ ] Implement CRUD operations for outlines and lecture sessions
-
-## 6. Settings
-
-- [ ] Default video file name/path configuration
-- [ ] Output folder selection
-- [ ] Time format option (mm:ss vs hh:mm:ss)
+- [x] Generate YouTube-friendly timestamp text block
+- [x] Generate FFmpeg trimming command for non-paused segments
 
 ## 7. Testing & QA
 
