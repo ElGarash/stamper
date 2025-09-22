@@ -1,7 +1,8 @@
 import { FC, useCallback, useEffect, useState } from "react"
-import { FlatList, View, ViewStyle, Alert, RefreshControl } from "react-native"
+import { FlatList, View, ViewStyle, Alert, RefreshControl, TouchableOpacity } from "react-native"
+import { SquarePen, Trash, ListPlus } from "lucide-react-native"
+import { Swipeable } from "react-native-gesture-handler"
 
-import { Button } from "@/components/Button"
 import { EmptyState } from "@/components/EmptyState"
 import { Header } from "@/components/Header"
 import { ListItem } from "@/components/ListItem"
@@ -13,11 +14,11 @@ import { deleteOutline, loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> {}
+interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> { }
 
 export const OutlinesListScreen: FC<OutlinesListScreenProps> = function OutlinesListScreen(props) {
   const { navigation } = props
-  const { themed } = useAppTheme()
+  const { themed, theme } = useAppTheme()
 
   const [outlines, setOutlines] = useState<Outline[]>([])
 
@@ -63,11 +64,33 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
     [loadOutlinesData],
   )
 
+  const handleEditOutline = useCallback((outline: Outline) => {
+    // TODO: Navigate to outline editor screen when implemented
+    Alert.alert(
+      "Edit Outline",
+      `Edit functionality for "${outline.title}" will be implemented soon.`,
+    )
+  }, [])
+
   const handleOutlinePress = useCallback(
     (outline: Outline) => {
       navigation.navigate("OutlinePreview", { outlineId: outline.id })
     },
     [navigation],
+  )
+
+  const renderRightActions = useCallback(
+    (outline: Outline) => (
+      <View style={themed($swipeActionsContainer)}>
+        <TouchableOpacity style={themed($editIcon)} onPress={() => handleEditOutline(outline)}>
+          <SquarePen size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+        <TouchableOpacity style={themed($deleteIcon)} onPress={() => handleDeleteOutline(outline.id, outline.title)}>
+          <Trash size={24} color={theme.colors.error} />
+        </TouchableOpacity>
+      </View>
+    ),
+    [handleDeleteOutline, handleEditOutline, themed, theme],
   )
 
   const handleImportMarkdown = useCallback(() => {
@@ -87,20 +110,27 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
   }, [navigation, loadOutlinesData])
 
   const renderOutlineItem = ({ item: outline }: { item: Outline }) => (
-    <ListItem
-      text={outline.title}
-      bottomSeparator
-      onPress={() => handleOutlinePress(outline)}
-      RightComponent={
-        <View style={themed($itemInfoContainer)}>
-          <Text size="xs" style={themed($itemCount)}>
-            {outline.items.length} items
-          </Text>
-        </View>
-      }
-      containerStyle={themed($itemContainer)}
-      onLongPress={() => handleDeleteOutline(outline.id, outline.title)}
-    />
+    <Swipeable
+      renderRightActions={() => renderRightActions(outline)}
+      friction={2}
+      overshootFriction={8}
+      rightThreshold={40}
+    >
+      <ListItem
+        text={outline.title}
+        bottomSeparator
+        onPress={() => handleOutlinePress(outline)}
+        RightComponent={
+          <View style={themed($itemInfoContainer)}>
+            <Text size="xs" style={themed($itemCount)}>
+              {outline.items.length} items
+            </Text>
+          </View>
+        }
+        containerStyle={themed($itemContainer)}
+        onLongPress={() => handleDeleteOutline(outline.id, outline.title)}
+      />
+    </Swipeable>
   )
 
   const renderEmptyState = () => (
@@ -137,12 +167,9 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
               <Text preset="subheading" style={themed($headerText)}>
                 {outlines.length} outline{outlines.length !== 1 ? "s" : ""}
               </Text>
-              <Button
-                text="Import"
-                preset="default"
-                style={themed($importButton)}
-                onPress={handleImportMarkdown}
-              />
+              <TouchableOpacity style={themed($importIcon)} onPress={handleImportMarkdown}>
+                <ListPlus size={24} color={theme.colors.text} />
+              </TouchableOpacity>
             </View>
 
             <FlatList
@@ -191,7 +218,7 @@ const $headerText: ViewStyle = {
   flex: 1,
 }
 
-const $importButton: ViewStyle = {
+const $importIcon: ViewStyle = {
   minWidth: 80,
   paddingHorizontal: spacing.md,
 }
@@ -216,4 +243,28 @@ const $itemInfoContainer: ViewStyle = {
 
 const $itemCount: ViewStyle = {
   opacity: 0.6,
+}
+
+const $swipeActionsContainer: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: spacing.sm,
+  backgroundColor: "transparent",
+}
+
+const $editIcon: ViewStyle = {
+  marginRight: spacing.sm,
+  minWidth: 70,
+  minHeight: 56,
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: spacing.xs,
+}
+
+const $deleteIcon: ViewStyle = {
+  minWidth: 80,
+  minHeight: 56,
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: spacing.xs,
 }
