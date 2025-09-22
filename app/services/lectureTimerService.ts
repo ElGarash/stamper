@@ -1,7 +1,5 @@
 import { Outline, LectureSession } from "@/models/Outline"
-import * as storage from "@/utils/storage"
-
-const LECTURE_SESSIONS_KEY = "lecture_sessions"
+import { addLectureSession, loadLectureSessions } from "@/services/lectureSessionStorage"
 
 export interface TimerState {
   isRunning: boolean
@@ -146,16 +144,14 @@ class LectureTimerService {
 
     const completedSession = this.currentSession
 
-    // Persist completed session (append to stored sessions)
+    // Persist completed session using lectureSessionStorage helper
     try {
-      const existing = storage.load<Array<LectureSession>>(LECTURE_SESSIONS_KEY) || []
-      existing.push(completedSession)
-      storage.save(LECTURE_SESSIONS_KEY, existing)
+      const success = addLectureSession(completedSession)
       // eslint-disable-next-line no-console
-      console.log(`Saved session ${completedSession.id} to storage (total=${existing.length})`)
+      console.log(`Saved session ${completedSession.id} persisted=${success}`)
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error("Failed to persist lecture session:", err)
+      console.error("Failed to persist lecture session via addLectureSession:", err)
     }
 
     // Log timestamps on export for debugging
@@ -297,7 +293,7 @@ export const lectureTimerService = new LectureTimerService()
 // Helper to load persisted sessions
 export function loadPersistedLectureSessions(): Array<LectureSession> {
   try {
-    return storage.load<Array<LectureSession>>(LECTURE_SESSIONS_KEY) || []
+    return loadLectureSessions()
   } catch {
     return []
   }

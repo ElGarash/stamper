@@ -11,6 +11,7 @@ import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navig
 import Config from "@/config"
 import { ErrorBoundary } from "@/screens/ErrorScreen/ErrorBoundary"
 import { LectureRecordingScreen } from "@/screens/LectureRecordingScreen"
+import { LectureSessionScreen } from "@/screens/LectureSessionScreen"
 import { MarkdownImportScreen } from "@/screens/MarkdownImportScreen"
 import { OutlinePreviewScreen } from "@/screens/OutlinePreviewScreen"
 import { OutlinesListScreen } from "@/screens/OutlinesListScreen"
@@ -30,6 +31,8 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 export type AppStackParamList = {
   Welcome: undefined
   OutlinesList: undefined
+  LectureSession: { sessionId: string }
+  LectureSessionsList: { outlineId: string }
   OutlinePreview: { outlineId: string }
   LectureRecording: {
     outline: { id: string; title: string; items: Array<{ id: string; title: string }> }
@@ -72,6 +75,11 @@ const AppStack = () => {
       initialRouteName="OutlinesList"
     >
       <Stack.Screen name="OutlinesList" component={OutlinesListScreen} />
+      <Stack.Screen
+        name="LectureSessionsList"
+        component={require("@/screens/LectureSessionsListScreen").LectureSessionsListScreen}
+      />
+      <Stack.Screen name="LectureSession" component={LectureSessionScreen} />
       <Stack.Screen name="OutlinePreview" component={OutlinePreviewScreen} />
       <Stack.Screen name="LectureRecording" component={LectureRecordingScreen} />
 

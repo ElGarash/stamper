@@ -53,6 +53,10 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
     navigation.navigate("LectureRecording", { outline })
   }, [outline, navigation])
 
+  const handleShowSessions = useCallback(() => {
+    navigation.navigate("LectureSessionsList", { outlineId })
+  }, [navigation, outlineId])
+
   const handleEdit = useCallback(() => {
     if (!outline) return
 
@@ -124,6 +128,7 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
         {/* Action Buttons */}
         <View style={$actionButtonsContainer}>
           <Button text="🎤 Start Lecture" onPress={handleStartLecture} style={$startButton} />
+          <Button text="📚 Recorded Sessions" onPress={handleShowSessions} style={$startButton} />
           <Button text="✏️ Edit" preset="reversed" onPress={handleEdit} style={$editButton} />
         </View>
 

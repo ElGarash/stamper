@@ -20,6 +20,7 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
   const { themed } = useAppTheme()
 
   const [outlines, setOutlines] = useState<Outline[]>([])
+
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 

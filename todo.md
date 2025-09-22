@@ -35,14 +35,13 @@ This to-do list is based on the specification in `spec.md`.
 - [x] Keep screen active (prevent lock) during recording
 - [x] If paused, show a full-screen backdrop filter, resume the timer on touch when paused
 - [x] Record the pause intervals to exclude from final timestamps
-- [ ] Add Recorded Sessions list accessible from Outlines List screen
+- [x] Add Recorded Sessions list accessible from Outlines List screen, each outline shows its recorded sessions.
 
 ## 4. Export
 
 - [x] Add "Stop & Export" button on recording screen
 - [ ] Generate YouTube-friendly timestamp text block
 - [ ] Generate FFmpeg trimming command for non-paused segments
-- [ ] Create Export Preview screen with copy buttons for timestamps and command
 
 ## 5. Data Persistence
 

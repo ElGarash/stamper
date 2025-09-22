@@ -78,9 +78,8 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
         onPress: () => {
           const session = lectureTimerService.stopLecture()
           if (session) {
-            // TODO: Navigate to export screen with session data
-            Alert.alert("Lecture Stopped", "Session data saved successfully!")
-            navigation.goBack()
+            // Navigate to session detail screen for export
+            navigation.navigate("LectureSession", { sessionId: session.id })
           }
         },
       },
