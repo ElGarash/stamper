@@ -34,7 +34,7 @@ This to-do list is based on the specification in `spec.md`.
 - [x] Implement "Pause / Resume" toggle and record pause intervals
 - [x] Keep screen active (prevent lock) during recording
 - [x] If paused, show a full-screen backdrop filter, resume the timer on touch when paused
-- [ ] Record the pause intervals to exclude from final timestamps
+- [x] Record the pause intervals to exclude from final timestamps
 - [ ] Add Recorded Sessions list accessible from Outlines List screen
 
 ## 4. Export

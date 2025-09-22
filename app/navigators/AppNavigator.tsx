@@ -31,7 +31,9 @@ export type AppStackParamList = {
   Welcome: undefined
   OutlinesList: undefined
   OutlinePreview: { outlineId: string }
-  LectureRecording: { outline: { id: string; title: string; items: Array<{ id: string; title: string }> } }
+  LectureRecording: {
+    outline: { id: string; title: string; items: Array<{ id: string; title: string }> }
+  }
   NotionOAuth: undefined
   NotionImport: undefined
   MarkdownImport: undefined
@@ -81,7 +83,7 @@ const AppStack = () => {
 }
 
 export interface NavigationProps
-  extends Partial<ComponentProps<typeof NavigationContainer<AppStackParamList>>> { }
+  extends Partial<ComponentProps<typeof NavigationContainer<AppStackParamList>>> {}
 
 export const AppNavigator = (props: NavigationProps) => {
   const { navigationTheme } = useAppTheme()

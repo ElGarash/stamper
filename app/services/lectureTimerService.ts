@@ -1,244 +1,304 @@
 import { Outline, LectureSession } from "@/models/Outline"
+import * as storage from "@/utils/storage"
+
+const LECTURE_SESSIONS_KEY = "lecture_sessions"
 
 export interface TimerState {
-    isRunning: boolean
-    startTime: number | null
-    pausedTime: number
-    pausedIntervals: Array<{ start: number; end: number }>
+  isRunning: boolean
+  startTime: number | null
+  pausedTime: number
+  pausedIntervals: Array<{ start: number; end: number }>
 }
 
 class LectureTimerService {
-    private timerState: TimerState = {
-        isRunning: false,
-        startTime: null,
-        pausedTime: 0,
-        pausedIntervals: [],
+  private timerState: TimerState = {
+    isRunning: false,
+    startTime: null,
+    pausedTime: 0,
+    pausedIntervals: [],
+  }
+
+  private currentSession: LectureSession | null = null
+  private listeners: Set<(state: TimerState) => void> = new Set()
+
+  /**
+   * Start a new lecture session
+   */
+  startLecture(outline: Outline): LectureSession {
+    const now = Date.now()
+
+    this.currentSession = {
+      id: this.generateSessionId(),
+      outlineId: outline.id,
+      startedAt: now,
+      pausedIntervals: [],
+      itemTimestamps: [],
     }
 
-    private currentSession: LectureSession | null = null
-    private listeners: Set<(state: TimerState) => void> = new Set()
-
-    /**
-     * Start a new lecture session
-     */
-    startLecture(outline: Outline): LectureSession {
-        const now = Date.now()
-
-        this.currentSession = {
-            id: this.generateSessionId(),
-            outlineId: outline.id,
-            startedAt: now,
-            pausedIntervals: [],
-            itemTimestamps: [],
-        }
-
-        this.timerState = {
-            isRunning: true,
-            startTime: now,
-            pausedTime: 0,
-            pausedIntervals: [],
-        }
-
-        this.notifyListeners()
-        return this.currentSession
+    this.timerState = {
+      isRunning: true,
+      startTime: now,
+      pausedTime: 0,
+      pausedIntervals: [],
     }
 
-    /**
-     * Pause the current lecture session
-     */
-    pauseLecture(): void {
-        if (!this.timerState.isRunning || !this.currentSession) return
+    this.notifyListeners()
+    return this.currentSession
+  }
 
-        const now = Date.now()
-        this.timerState.isRunning = false
+  /**
+   * Pause the current lecture session
+   */
+  pauseLecture(): void {
+    if (!this.timerState.isRunning || !this.currentSession) return
 
-        // Start a new pause interval
-        this.timerState.pausedIntervals.push({ start: now, end: 0 })
+    const now = Date.now()
+    this.timerState.isRunning = false
 
-        this.notifyListeners()
+    // Start a new pause interval
+    const newInterval = { start: now, end: 0 }
+    this.timerState.pausedIntervals.push(newInterval)
+
+    // Also register the interval immediately on the current session so it's available
+    // even if the app is killed before resume/stop.
+    this.currentSession.pausedIntervals.push(newInterval as { start: number; end: number })
+
+    // Log pause start
+    try {
+      // eslint-disable-next-line no-console
+      console.log(`Pause started at ${newInterval.start}`)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to log pause start:", err)
     }
 
-    /**
-     * Resume the current lecture session
-     */
-    resumeLecture(): void {
-        if (this.timerState.isRunning || !this.currentSession) return
+    this.notifyListeners()
+  }
 
-        const now = Date.now()
-        this.timerState.isRunning = true
+  /**
+   * Resume the current lecture session
+   */
+  resumeLecture(): void {
+    if (this.timerState.isRunning || !this.currentSession) return
 
-        // Close the current pause interval
-        const currentPauseInterval =
-            this.timerState.pausedIntervals[this.timerState.pausedIntervals.length - 1]
-        if (currentPauseInterval && currentPauseInterval.end === 0) {
-            currentPauseInterval.end = now
-            this.timerState.pausedTime += now - currentPauseInterval.start
+    const now = Date.now()
+    this.timerState.isRunning = true
 
-            // Also update the session
-            this.currentSession.pausedIntervals.push(currentPauseInterval)
-        }
-
-        this.notifyListeners()
-    }
-
-    /**
-     * Stop the current lecture session
-     */
-    stopLecture(): LectureSession | null {
-        if (!this.currentSession) return null
-
-        const now = Date.now()
-
-        // If currently running, pause first
-        if (this.timerState.isRunning) {
-            this.pauseLecture()
-        }
-
-        // Close any open pause interval
-        const openPauseInterval = this.timerState.pausedIntervals.find((interval) => interval.end === 0)
-        if (openPauseInterval) {
-            openPauseInterval.end = now
-            this.timerState.pausedTime += now - openPauseInterval.start
-        }
-
-        // Complete the session
-        this.currentSession.completedAt = now
-        this.currentSession.pausedIntervals = [...this.timerState.pausedIntervals]
-
-        const completedSession = this.currentSession
-
-        // Log timestamps on export for debugging
-        try {
-            // eslint-disable-next-line no-console
-            console.log(`Lecture export - session id: ${completedSession.id}`)
-            // eslint-disable-next-line no-console
-            console.log("Item timestamps:")
-            completedSession.itemTimestamps.forEach((entry) => {
-                // eslint-disable-next-line no-console
-                console.log(
-                    `  - itemId=${entry.itemId} timestamp=${entry.timestamp} (${new Date(
-                        entry.timestamp,
-                    ).toISOString()})`,
-                )
-            })
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error("Failed to log lecture timestamps:", err)
-        }
-
-        // Reset state
-        this.currentSession = null
-        this.timerState = {
-            isRunning: false,
-            startTime: null,
-            pausedTime: 0,
-            pausedIntervals: [],
-        }
-
-        this.notifyListeners()
-        return completedSession
-    }
-
-    /**
-     * Log when an outline item is covered
-     */
-    logItemCovered(itemId: string): void {
-        if (!this.currentSession) return
-
-        const timestamp = Date.now()
-
-        // Remove any existing timestamp for this item
-        this.currentSession.itemTimestamps = this.currentSession.itemTimestamps.filter(
-            (entry) => entry.itemId !== itemId,
+    // Close the current pause interval
+    const currentPauseInterval =
+      this.timerState.pausedIntervals[this.timerState.pausedIntervals.length - 1]
+    if (currentPauseInterval && currentPauseInterval.end === 0) {
+      currentPauseInterval.end = now
+      this.timerState.pausedTime += now - currentPauseInterval.start
+      // Log pause end
+      try {
+        // eslint-disable-next-line no-console
+        console.log(
+          `Pause ended start=${currentPauseInterval.start} end=${currentPauseInterval.end} duration=${
+            currentPauseInterval.end - currentPauseInterval.start
+          }`,
         )
-
-        // Add new timestamp
-        this.currentSession.itemTimestamps.push({
-            itemId,
-            timestamp,
-        })
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to log pause end:", err)
+      }
     }
 
-    /**
-     * Remove timestamp for an item (when unchecked)
-     */
-    removeItemTimestamp(itemId: string): void {
-        if (!this.currentSession) return
+    this.notifyListeners()
+  }
 
-        this.currentSession.itemTimestamps = this.currentSession.itemTimestamps.filter(
-            (entry) => entry.itemId !== itemId,
+  /**
+   * Stop the current lecture session
+   */
+  stopLecture(): LectureSession | null {
+    if (!this.currentSession) return null
+
+    const now = Date.now()
+
+    // If currently running, pause first
+    if (this.timerState.isRunning) {
+      this.pauseLecture()
+    }
+
+    // Close any open pause interval
+    const openPauseInterval = this.timerState.pausedIntervals.find((interval) => interval.end === 0)
+    if (openPauseInterval) {
+      openPauseInterval.end = now
+      this.timerState.pausedTime += now - openPauseInterval.start
+    }
+
+    // Complete the session
+    this.currentSession.completedAt = now
+    this.currentSession.pausedIntervals = [...this.timerState.pausedIntervals]
+
+    // Log pause intervals for later FFmpeg trimming
+    try {
+      // eslint-disable-next-line no-console
+      console.log("Pause intervals (ms since epoch):")
+      this.currentSession.pausedIntervals.forEach((p) => {
+        // eslint-disable-next-line no-console
+        console.log(`  - start=${p.start} end=${p.end} duration=${p.end - p.start}`)
+      })
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to log pause intervals:", err)
+    }
+
+    const completedSession = this.currentSession
+
+    // Persist completed session (append to stored sessions)
+    try {
+      const existing = storage.load<Array<LectureSession>>(LECTURE_SESSIONS_KEY) || []
+      existing.push(completedSession)
+      storage.save(LECTURE_SESSIONS_KEY, existing)
+      // eslint-disable-next-line no-console
+      console.log(`Saved session ${completedSession.id} to storage (total=${existing.length})`)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to persist lecture session:", err)
+    }
+
+    // Log timestamps on export for debugging
+    try {
+      // eslint-disable-next-line no-console
+      console.log(`Lecture export - session id: ${completedSession.id}`)
+      // eslint-disable-next-line no-console
+      console.log("Item timestamps:")
+      completedSession.itemTimestamps.forEach((entry) => {
+        // eslint-disable-next-line no-console
+        console.log(
+          `  - itemId=${entry.itemId} timestamp=${entry.timestamp} (${new Date(
+            entry.timestamp,
+          ).toISOString()})`,
         )
+      })
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to log lecture timestamps:", err)
     }
 
-    /**
-     * Get the current elapsed time in milliseconds (excluding paused time)
-     */
-    getElapsedTime(): number {
-        if (!this.timerState.startTime) return 0
-
-        const now = Date.now()
-        const totalElapsed = now - this.timerState.startTime
-
-        let pausedTime = this.timerState.pausedTime
-
-        // Add current pause time if paused
-        if (!this.timerState.isRunning) {
-            const currentPauseInterval =
-                this.timerState.pausedIntervals[this.timerState.pausedIntervals.length - 1]
-            if (currentPauseInterval && currentPauseInterval.end === 0) {
-                pausedTime += now - currentPauseInterval.start
-            }
-        }
-
-        return totalElapsed - pausedTime
+    // Reset state
+    this.currentSession = null
+    this.timerState = {
+      isRunning: false,
+      startTime: null,
+      pausedTime: 0,
+      pausedIntervals: [],
     }
 
-    /**
-     * Get current timer state
-     */
-    getTimerState(): TimerState {
-        return { ...this.timerState }
+    this.notifyListeners()
+    return completedSession
+  }
+
+  /**
+   * Log when an outline item is covered
+   */
+  logItemCovered(itemId: string): void {
+    if (!this.currentSession) return
+
+    const timestamp = Date.now()
+
+    // Remove any existing timestamp for this item
+    this.currentSession.itemTimestamps = this.currentSession.itemTimestamps.filter(
+      (entry) => entry.itemId !== itemId,
+    )
+
+    // Add new timestamp
+    this.currentSession.itemTimestamps.push({
+      itemId,
+      timestamp,
+    })
+  }
+
+  /**
+   * Remove timestamp for an item (when unchecked)
+   */
+  removeItemTimestamp(itemId: string): void {
+    if (!this.currentSession) return
+
+    this.currentSession.itemTimestamps = this.currentSession.itemTimestamps.filter(
+      (entry) => entry.itemId !== itemId,
+    )
+  }
+
+  /**
+   * Get the current elapsed time in milliseconds (excluding paused time)
+   */
+  getElapsedTime(): number {
+    if (!this.timerState.startTime) return 0
+
+    const now = Date.now()
+    const totalElapsed = now - this.timerState.startTime
+
+    let pausedTime = this.timerState.pausedTime
+
+    // Add current pause time if paused
+    if (!this.timerState.isRunning) {
+      const currentPauseInterval =
+        this.timerState.pausedIntervals[this.timerState.pausedIntervals.length - 1]
+      if (currentPauseInterval && currentPauseInterval.end === 0) {
+        pausedTime += now - currentPauseInterval.start
+      }
     }
 
-    /**
-     * Get current session
-     */
-    getCurrentSession(): LectureSession | null {
-        return this.currentSession ? { ...this.currentSession } : null
+    return totalElapsed - pausedTime
+  }
+
+  /**
+   * Get current timer state
+   */
+  getTimerState(): TimerState {
+    return { ...this.timerState }
+  }
+
+  /**
+   * Get current session
+   */
+  getCurrentSession(): LectureSession | null {
+    return this.currentSession ? { ...this.currentSession } : null
+  }
+
+  /**
+   * Subscribe to timer state changes
+   */
+  addListener(listener: (state: TimerState) => void): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
+  }
+
+  /**
+   * Format elapsed time as mm:ss or hh:mm:ss
+   */
+  formatTime(milliseconds: number, includeHours: boolean = false): string {
+    const totalSeconds = Math.floor(milliseconds / 1000)
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+
+    if (includeHours || hours > 0) {
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
     }
 
-    /**
-     * Subscribe to timer state changes
-     */
-    addListener(listener: (state: TimerState) => void): () => void {
-        this.listeners.add(listener)
-        return () => this.listeners.delete(listener)
-    }
+    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+  }
 
-    /**
-     * Format elapsed time as mm:ss or hh:mm:ss
-     */
-    formatTime(milliseconds: number, includeHours: boolean = false): string {
-        const totalSeconds = Math.floor(milliseconds / 1000)
-        const hours = Math.floor(totalSeconds / 3600)
-        const minutes = Math.floor((totalSeconds % 3600) / 60)
-        const seconds = totalSeconds % 60
+  private generateSessionId(): string {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
 
-        if (includeHours || hours > 0) {
-            return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-        }
-
-        return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-    }
-
-    private generateSessionId(): string {
-        return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    }
-
-    private notifyListeners(): void {
-        this.listeners.forEach((listener) => listener(this.timerState))
-    }
+  private notifyListeners(): void {
+    this.listeners.forEach((listener) => listener(this.timerState))
+  }
 }
 
 // Export singleton instance
 export const lectureTimerService = new LectureTimerService()
+
+// Helper to load persisted sessions
+export function loadPersistedLectureSessions(): Array<LectureSession> {
+  try {
+    return storage.load<Array<LectureSession>>(LECTURE_SESSIONS_KEY) || []
+  } catch {
+    return []
+  }
+}
