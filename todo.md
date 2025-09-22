@@ -29,15 +29,17 @@ This to-do list is based on the specification in `spec.md`.
 
 ## 3. Recording & Timer
 
-- [ ] Implement "Start Lecture" button with millisecond-accurate clock
-- [ ] Log timestamp when checklist items are tapped
-- [ ] Implement "Pause / Resume" toggle and record pause intervals
-- [ ] Keep screen active (prevent lock) during recording
-- [ ] Resume timer on touch when paused
+- [x] Implement "Start Lecture" button with millisecond-accurate clock
+- [x] Log timestamp when checklist items are tapped
+- [x] Implement "Pause / Resume" toggle and record pause intervals
+- [x] Keep screen active (prevent lock) during recording
+- [x] If paused, show a full-screen backdrop filter, resume the timer on touch when paused
+- [ ] Record the pause intervals to exclude from final timestamps
+- [ ] Add Recorded Sessions list accessible from Outlines List screen
 
 ## 4. Export
 
-- [ ] Add "Stop & Export" button on recording screen
+- [x] Add "Stop & Export" button on recording screen
 - [ ] Generate YouTube-friendly timestamp text block
 - [ ] Generate FFmpeg trimming command for non-paused segments
 - [ ] Create Export Preview screen with copy buttons for timestamps and command

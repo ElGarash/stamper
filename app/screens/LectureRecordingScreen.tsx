@@ -8,6 +8,7 @@ import { Text } from "@/components/Text"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
 import { spacing } from "@/theme/spacing"
+import { TouchableWithoutFeedback } from "react-native"
 
 interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> { }
 
@@ -162,6 +163,14 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
                         scrollEnabled={true}
                     />
                 </View>
+                {/* Paused Backdrop - full screen overlay when paused */}
+                {!timerState.isRunning && (
+                    <TouchableWithoutFeedback onPress={() => lectureTimerService.resumeLecture()}>
+                        <View style={$pausedBackdrop}>
+                            <Text style={$pausedBackdropText}>Paused — tap anywhere to resume</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
+                )}
             </View>
         </Screen>
     )
@@ -226,6 +235,25 @@ const $stopButton: ViewStyle = {
 
 const $checklistContainer: ViewStyle = {
     flex: 1,
+}
+
+const $pausedBackdrop: ViewStyle = {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+}
+
+const $pausedBackdropText: TextStyle = {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
+    paddingHorizontal: spacing.md,
 }
 
 const $outlineTitle: TextStyle = {
