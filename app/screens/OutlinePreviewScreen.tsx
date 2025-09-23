@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useState } from "react"
-import { FlatList, View, ViewStyle, TextStyle, Alert } from "react-native"
+import { FlatList, View, ViewStyle, TextStyle } from "react-native"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -46,6 +46,14 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
     loadOutline()
   }, [loadOutline])
 
+  // Reload when returning from editor or becoming focused
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadOutline()
+    })
+    return unsubscribe
+  }, [navigation, loadOutline])
+
   const handleStartLecture = useCallback(() => {
     if (!outline) return
 
@@ -59,10 +67,8 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
 
   const handleEdit = useCallback(() => {
     if (!outline) return
-
-    // TODO: Navigate to edit screen
-    Alert.alert("Coming Soon", "Edit functionality will be implemented next!")
-  }, [outline])
+    navigation.navigate("OutlineEditor", { outlineId })
+  }, [outline, navigation, outlineId])
 
   const renderOutlineItem = useCallback(
     ({ item, index }: { item: { id: string; title: string }; index: number }) => (

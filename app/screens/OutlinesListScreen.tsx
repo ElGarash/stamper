@@ -14,7 +14,7 @@ import { deleteOutline, loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> { }
+interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> {}
 
 export const OutlinesListScreen: FC<OutlinesListScreenProps> = function OutlinesListScreen(props) {
   const { navigation } = props
@@ -64,13 +64,12 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
     [loadOutlinesData],
   )
 
-  const handleEditOutline = useCallback((outline: Outline) => {
-    // TODO: Navigate to outline editor screen when implemented
-    Alert.alert(
-      "Edit Outline",
-      `Edit functionality for "${outline.title}" will be implemented soon.`,
-    )
-  }, [])
+  const handleEditOutline = useCallback(
+    (outline: Outline) => {
+      navigation.navigate("OutlineEditor", { outlineId: outline.id })
+    },
+    [navigation],
+  )
 
   const handleOutlinePress = useCallback(
     (outline: Outline) => {
@@ -85,7 +84,10 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
         <TouchableOpacity style={themed($editIcon)} onPress={() => handleEditOutline(outline)}>
           <SquarePen size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <TouchableOpacity style={themed($deleteIcon)} onPress={() => handleDeleteOutline(outline.id, outline.title)}>
+        <TouchableOpacity
+          style={themed($deleteIcon)}
+          onPress={() => handleDeleteOutline(outline.id, outline.title)}
+        >
           <Trash size={24} color={theme.colors.error} />
         </TouchableOpacity>
       </View>

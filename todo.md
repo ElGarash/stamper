@@ -24,9 +24,12 @@ This to-do list is based on the specification in `spec.md`.
   - [x] Clicking on an outline opens it in preview mode
 - [x] Swipe interactions to delete or edit outlines
 - [ ] Create "Outline Editor" screen
-  - [ ] Drag & drop items
-  - [ ] Edit item titles inline
-  - [ ] Save changes and navigate back
+  - [x] Edit outline title inline
+  - [x] Drag & drop items
+  - [x] Add new items
+  - [ ] Delete items
+  - [x] Edit item inline
+  - [x] Save changes and navigate back
 
 ## 3. Recording & Timer
 

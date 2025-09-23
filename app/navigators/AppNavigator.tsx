@@ -34,6 +34,7 @@ export type AppStackParamList = {
   LectureSession: { sessionId: string }
   LectureSessionsList: { outlineId: string }
   OutlinePreview: { outlineId: string }
+  OutlineEditor: { outlineId: string }
   LectureRecording: {
     outline: { id: string; title: string; items: Array<{ id: string; title: string }> }
   }
@@ -81,6 +82,10 @@ const AppStack = () => {
       />
       <Stack.Screen name="LectureSession" component={LectureSessionScreen} />
       <Stack.Screen name="OutlinePreview" component={OutlinePreviewScreen} />
+      <Stack.Screen
+        name="OutlineEditor"
+        component={require("@/screens/OutlineEditorScreen").OutlineEditorScreen}
+      />
       <Stack.Screen name="LectureRecording" component={LectureRecordingScreen} />
 
       {/** 🔥 Your screens go here */}
