@@ -94,12 +94,23 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
     ({ item, index }: { item: { id: string; title: string }; index: number }) => {
       const isChecked = checkedItems.has(item.id)
 
+      // Determine nesting level from leading spaces (each 2 spaces = 1 level) added during markdown flattening
+      // Example stored title: "    Subtopic" (4 leading spaces -> level 2)
+      const leadingSpaceMatch = item.title.match(/^( +)/)
+      const leadingSpaces = leadingSpaceMatch ? leadingSpaceMatch[1].length : 0
+      const level = Math.floor(leadingSpaces / 2)
+      const displayTitle = leadingSpaces > 0 ? item.title.slice(leadingSpaces) : item.title
+
+      // Indent the entire card instead of showing spaces inside the text
+      const indentStyle: ViewStyle = level > 0 ? { marginLeft: level * 18 } : {}
+
       return (
         <TouchableOpacity
           style={[
             $outlineItem,
             isChecked && $outlineItemChecked,
             isChecked && $outlineItemDisabled,
+            indentStyle,
           ]}
           onPress={() => handleToggleItem(item.id)}
           disabled={isChecked}
@@ -107,7 +118,9 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
           <View style={$itemNumberContainer}>
             <Text style={[$itemNumber, isChecked && $itemNumberChecked]}>{index + 1}</Text>
           </View>
-          <Text style={[$outlineItemText, isChecked && $outlineItemTextChecked]}>{item.title}</Text>
+          <Text style={[$outlineItemText, isChecked && $outlineItemTextChecked]}>
+            {displayTitle}
+          </Text>
           <View style={[$checkbox, isChecked && $checkboxChecked]}>
             {isChecked && <Text style={$checkmark}>✓</Text>}
           </View>

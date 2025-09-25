@@ -74,14 +74,23 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   }, [outline, navigation, outlineId])
 
   const renderOutlineItem = useCallback(
-    ({ item, index }: { item: { id: string; title: string }; index: number }) => (
-      <View style={$outlineItem}>
-        <View style={$itemNumberContainer}>
-          <Text style={$itemNumber}>{index + 1}</Text>
+    ({ item, index }: { item: { id: string; title: string }; index: number }) => {
+      // Detect leading spaces (added during markdown flattening to encode nesting) and compute level
+      const leadingSpaceMatch = item.title.match(/^( +)/)
+      const leadingSpaces = leadingSpaceMatch ? leadingSpaceMatch[1].length : 0
+      const level = Math.floor(leadingSpaces / 2)
+      const displayTitle = leadingSpaces > 0 ? item.title.slice(leadingSpaces) : item.title
+      const indentStyle: ViewStyle = level > 0 ? { marginLeft: level * 18 } : {}
+
+      return (
+        <View style={[$outlineItem, indentStyle]}>
+          <View style={$itemNumberContainer}>
+            <Text style={$itemNumber}>{index + 1}</Text>
+          </View>
+          <Text style={$outlineItemText}>{displayTitle}</Text>
         </View>
-        <Text style={$outlineItemText}>{item.title}</Text>
-      </View>
-    ),
+      )
+    },
     [],
   )
 

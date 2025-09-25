@@ -95,8 +95,9 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
 
   // Get outline items map for proper labels
   const outline = session ? getOutlineById(session.outlineId) : null
+  // We intentionally strip any leading spaces added to represent nesting; session view shows a flat list
   const outlineItemsMap = outline
-    ? Object.fromEntries(outline.items.map((item) => [item.id, item.title]))
+    ? Object.fromEntries(outline.items.map((item) => [item.id, item.title.replace(/^\s+/, "")]))
     : {}
 
   const handleCopyTimestamps = () => {
