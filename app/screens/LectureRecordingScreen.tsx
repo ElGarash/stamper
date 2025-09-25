@@ -45,18 +45,12 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
 
   const handleToggleItem = useCallback(
     (itemId: string) => {
+      // If already checked, do nothing (prevent unchecking)
+      if (checkedItems.has(itemId)) return
+
       const newCheckedItems = new Set(checkedItems)
-
-      if (newCheckedItems.has(itemId)) {
-        // Unchecking item
-        newCheckedItems.delete(itemId)
-        lectureTimerService.removeItemTimestamp(itemId)
-      } else {
-        // Checking item
-        newCheckedItems.add(itemId)
-        lectureTimerService.logItemCovered(itemId)
-      }
-
+      newCheckedItems.add(itemId)
+      lectureTimerService.logItemCovered(itemId)
       setCheckedItems(newCheckedItems)
     },
     [checkedItems],
@@ -93,8 +87,13 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
 
       return (
         <TouchableOpacity
-          style={[$outlineItem, isChecked && $outlineItemChecked]}
+          style={[
+            $outlineItem,
+            isChecked && $outlineItemChecked,
+            isChecked && $outlineItemDisabled,
+          ]}
           onPress={() => handleToggleItem(item.id)}
+          disabled={isChecked}
         >
           <View style={$itemNumberContainer}>
             <Text style={[$itemNumber, isChecked && $itemNumberChecked]}>{index + 1}</Text>
@@ -327,6 +326,11 @@ const $outlineItem: ViewStyle = {
 const $outlineItemChecked: ViewStyle = {
   backgroundColor: "#FFE8D6",
   borderColor: "#FF7A00",
+}
+
+// Once an item is checked (and no longer tappable) we slightly reduce opacity to signal it's locked
+const $outlineItemDisabled: ViewStyle = {
+  opacity: 0.9,
 }
 
 const $itemNumberContainer: ViewStyle = {
