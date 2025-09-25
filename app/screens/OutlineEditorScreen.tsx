@@ -14,7 +14,7 @@ import { getOutlineById, updateOutline } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> {}
+interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> { }
 
 export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
   const { route, navigation } = props
@@ -277,7 +277,6 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
                 </ScaleDecorator>
               )
             }}
-            ListFooterComponent={<View style={{ height: spacing.sm }} />}
           />
 
           {/* Add Item Row placed below list for better input behavior */}
@@ -285,7 +284,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
             <TouchableOpacity
               accessibilityRole="button"
               onPress={() => setIsAdding(true)}
-              style={themed($row)}
+              style={themed([$row, $addRow])}
             >
               <View style={themed($handle)}>
                 <Plus size={20} />
@@ -293,7 +292,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
               <Text style={themed($addText)}>{(items.length + 1).toString()}. Add item</Text>
             </TouchableOpacity>
           ) : (
-            <View style={themed($row)}>
+            <View style={themed([$row, $addRow])}>
               <View style={themed($handle)}>
                 <Plus size={20} />
               </View>
@@ -330,6 +329,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
 
 const $container: ViewStyle = {
   flex: 1,
+  justifyContent: "flex-start",
 }
 
 const $content: ViewStyle = {
@@ -357,7 +357,7 @@ const $listContainer: ViewStyle = {
 }
 
 const $listContent: ViewStyle = {
-  paddingBottom: spacing.md,
+  paddingBottom: 0,
 }
 
 const $row: ViewStyle = {
@@ -398,6 +398,10 @@ const $rowNativeInput: TextStyle = {
 
 const $rowTextPressable: ViewStyle = {
   flex: 1,
+}
+
+const $addRow: ViewStyle = {
+  marginTop: spacing.xs,
 }
 
 const $swipeActionsContainer: ViewStyle = {
