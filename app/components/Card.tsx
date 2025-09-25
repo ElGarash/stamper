@@ -256,14 +256,15 @@ export function Card(props: CardProps) {
 }
 
 const $containerBase: ThemedStyle<ViewStyle> = (theme) => ({
-  borderRadius: theme.spacing.md,
-  padding: theme.spacing.xs,
-  borderWidth: 1,
-  shadowColor: theme.colors.palette.neutral800,
-  shadowOffset: { width: 0, height: 12 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12.81,
-  elevation: 16,
+  borderRadius: 14,
+  padding: theme.spacing.sm,
+  borderWidth: 3,
+  shadowColor: theme.colors.palette.neutral900,
+  // Hard offset shadow for neo-brutalism
+  shadowOffset: { width: 6, height: 6 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 10,
   minHeight: 96,
 })
 
@@ -285,7 +286,7 @@ const $containerPresets: Record<Presets, ThemedStyleArray<ViewStyle>> = {
     $containerBase,
     (theme) => ({
       backgroundColor: theme.colors.palette.neutral100,
-      borderColor: theme.colors.palette.neutral300,
+      borderColor: theme.colors.palette.neutral800,
     }),
   ],
   reversed: [
@@ -293,7 +294,7 @@ const $containerPresets: Record<Presets, ThemedStyleArray<ViewStyle>> = {
     $containerBase,
     (theme) => ({
       backgroundColor: theme.colors.palette.neutral800,
-      borderColor: theme.colors.palette.neutral500,
+      borderColor: theme.colors.palette.neutral100,
     }),
   ],
 }

@@ -1,38 +1,43 @@
+// Neo-brutalist navy & orange palette.
+// Kept semantic key names to avoid refactors. Neutral scale skews warm gray with navy anchors.
 const palette = {
-  neutral100: "#FFFFFF",
-  neutral200: "#F4F2F1",
-  neutral300: "#D7CEC9",
-  neutral400: "#B6ACA6",
-  neutral500: "#978F8A",
-  neutral600: "#564E4A",
-  neutral700: "#3C3836",
-  neutral800: "#191015",
-  neutral900: "#000000",
+  neutral100: "#FFFFFF", // pure white surfaces
+  neutral200: "#F2F5FA", // light cool background
+  neutral300: "#E1E6EE", // light border bg
+  neutral400: "#C2CBD8", // secondary border
+  neutral500: "#7A8696", // dim text
+  neutral600: "#4A5563", // subdued text
+  neutral700: "#273041", // deep navy surface alt
+  neutral800: "#162033", // primary navy surface
+  neutral900: "#0D1624", // almost black navy
 
-  primary100: "#F4E0D9",
-  primary200: "#E8C1B4",
-  primary300: "#DDA28E",
-  primary400: "#D28468",
-  primary500: "#C76542",
-  primary600: "#A54F31",
+  // Primary = Orange ladder (accent brand)
+  primary100: "#FFE8D6",
+  primary200: "#FFCFA8",
+  primary300: "#FFB26B",
+  primary400: "#FF9833",
+  primary500: "#FF7A00", // main brand orange
+  primary600: "#CC5F00",
 
-  secondary100: "#DCDDE9",
-  secondary200: "#BCC0D6",
-  secondary300: "#9196B9",
-  secondary400: "#626894",
-  secondary500: "#41476E",
+  // Secondary = Navy accent ladder (reverse of neutrals for semantic pairing)
+  secondary100: "#D4E2FF",
+  secondary200: "#A9C4FF",
+  secondary300: "#7E9FE8",
+  secondary400: "#4F72B8",
+  secondary500: "#2E4E82",
 
-  accent100: "#FFEED4",
-  accent200: "#FFE1B2",
-  accent300: "#FDD495",
-  accent400: "#FBC878",
-  accent500: "#FFBB50",
+  // Accent = High energy vivid orange/yellow for highlights
+  accent100: "#FFF4CC",
+  accent200: "#FFE899",
+  accent300: "#FFDC66",
+  accent400: "#FFD033",
+  accent500: "#FFC400",
 
-  angry100: "#F2D6CD",
-  angry500: "#C03403",
+  angry100: "#FEE4E2",
+  angry500: "#D92D20",
 
-  overlay20: "rgba(25, 16, 21, 0.2)",
-  overlay50: "rgba(25, 16, 21, 0.5)",
+  overlay20: "rgba(13,22,36,0.2)",
+  overlay50: "rgba(13,22,36,0.5)",
 } as const
 
 export const colors = {

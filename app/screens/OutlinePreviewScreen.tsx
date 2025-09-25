@@ -13,7 +13,7 @@ import { loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> {}
+interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> { }
 
 export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   const { route, navigation } = props
@@ -250,35 +250,46 @@ const $itemsList: ViewStyle = {
   marginTop: spacing.xs,
 }
 
+// Note: For simplicity using static styles referencing the new palette colors directly.
+// Could be converted to fully themed styles if dynamic theming per mode is required.
 const $outlineItem: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   paddingVertical: spacing.sm,
   paddingHorizontal: spacing.md,
   marginVertical: spacing.xs,
-  backgroundColor: "#f5f5f5",
-  borderRadius: spacing.sm,
-  borderLeftWidth: 4,
-  borderLeftColor: "#007AFF",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 12,
+  borderWidth: 3,
+  borderColor: "#162033", // navy border
+  shadowColor: "#0D1624",
+  shadowOffset: { width: 4, height: 4 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 6,
 }
 
 const $itemNumberContainer: ViewStyle = {
-  width: 32,
-  height: 32,
-  borderRadius: 16,
-  backgroundColor: "#f0f0f0",
+  width: 36,
+  height: 36,
+  borderRadius: 8,
+  backgroundColor: "#FF7A00", // brand orange
   justifyContent: "center",
   alignItems: "center",
   marginRight: spacing.sm,
+  borderWidth: 2,
+  borderColor: "#162033",
 }
 
 const $itemNumber: TextStyle = {
   fontWeight: "600",
-  color: "#666",
+  color: "#FFFFFF",
+  fontSize: 16,
 }
 
 const $outlineItemText: TextStyle = {
   flex: 1,
   fontSize: 16,
-  color: "#333333",
+  color: "#273041", // deep navy text
+  fontWeight: "500",
 }

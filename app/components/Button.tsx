@@ -178,14 +178,20 @@ export function Button(props: ButtonProps) {
   )
 }
 
-const $baseViewStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+const $baseViewStyle: ThemedStyle<ViewStyle> = ({ spacing, colors }) => ({
   minHeight: 56,
-  borderRadius: 4,
+  borderRadius: 10,
   justifyContent: "center",
   alignItems: "center",
-  paddingVertical: spacing.sm,
+  paddingVertical: spacing.xs,
   paddingHorizontal: spacing.sm,
-  overflow: "hidden",
+  overflow: "visible",
+  // Neo-brutalist offset shadow (hard edge) using border color for consistency
+  shadowColor: colors.palette.neutral900,
+  shadowOffset: { width: 4, height: 4 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 6,
 })
 
 const $baseTextStyle: ThemedStyle<TextStyle> = ({ typography }) => ({
@@ -212,33 +218,41 @@ const $viewPresets: Record<Presets, ThemedStyleArray<ViewStyle>> = {
     $styles.row,
     $baseViewStyle,
     ({ colors }) => ({
-      borderWidth: 1,
-      borderColor: colors.palette.neutral400,
+      borderWidth: 3,
+      borderColor: colors.palette.neutral800,
       backgroundColor: colors.palette.neutral100,
     }),
   ],
   filled: [
     $styles.row,
     $baseViewStyle,
-    ({ colors }) => ({ backgroundColor: colors.palette.neutral300 }),
+    ({ colors }) => ({
+      borderWidth: 3,
+      borderColor: colors.palette.neutral800,
+      backgroundColor: colors.palette.primary500,
+    }),
   ],
   reversed: [
     $styles.row,
     $baseViewStyle,
-    ({ colors }) => ({ backgroundColor: colors.palette.neutral800 }),
+    ({ colors }) => ({
+      borderWidth: 3,
+      borderColor: colors.palette.neutral800,
+      backgroundColor: colors.palette.neutral800,
+    }),
   ],
 }
 
 const $textPresets: Record<Presets, ThemedStyleArray<TextStyle>> = {
-  default: [$baseTextStyle],
-  filled: [$baseTextStyle],
+  default: [$baseTextStyle, ({ colors }) => ({ color: colors.palette.neutral800 })],
+  filled: [$baseTextStyle, ({ colors }) => ({ color: colors.palette.neutral100 })],
   reversed: [$baseTextStyle, ({ colors }) => ({ color: colors.palette.neutral100 })],
 }
 
 const $pressedViewPresets: Record<Presets, ThemedStyle<ViewStyle>> = {
-  default: ({ colors }) => ({ backgroundColor: colors.palette.neutral200 }),
-  filled: ({ colors }) => ({ backgroundColor: colors.palette.neutral400 }),
-  reversed: ({ colors }) => ({ backgroundColor: colors.palette.neutral700 }),
+  default: ({ colors }) => ({ backgroundColor: colors.palette.neutral300, transform: [{ translateX: 2 }, { translateY: 2 }] }),
+  filled: ({ colors }) => ({ backgroundColor: colors.palette.primary400, transform: [{ translateX: 2 }, { translateY: 2 }] }),
+  reversed: ({ colors }) => ({ backgroundColor: colors.palette.neutral700, transform: [{ translateX: 2 }, { translateY: 2 }] }),
 }
 
 const $pressedTextPresets: Record<Presets, ThemedStyle<TextStyle>> = {

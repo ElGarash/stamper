@@ -14,7 +14,7 @@ import { getOutlineById, updateOutline } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> {}
+interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> { }
 
 export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
   const { route, navigation } = props
@@ -365,15 +365,24 @@ const $row: ViewStyle = {
   alignItems: "center",
   paddingVertical: spacing.sm,
   paddingHorizontal: spacing.sm,
-  borderRadius: spacing.xs,
+  borderRadius: 12,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 3,
+  borderColor: "#162033",
+  shadowColor: "#0D1624",
+  shadowOffset: { width: 4, height: 4 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 4,
+  marginBottom: spacing.xs,
 }
 
 const $rowActive: ViewStyle = {
-  backgroundColor: "#f2f2f2",
+  backgroundColor: "#FFE8D6",
 }
 
 const $handle: ViewStyle = {
-  width: 28,
+  width: 32,
   alignItems: "center",
   justifyContent: "center",
   marginRight: spacing.sm,
@@ -382,18 +391,22 @@ const $handle: ViewStyle = {
 const $rowText: TextStyle = {
   flex: 1,
   fontSize: 16,
+  fontWeight: "500",
+  color: "#273041",
 }
 
 const $addText: TextStyle = {
   flex: 1,
   fontSize: 16,
-  opacity: 0.6,
+  opacity: 0.8,
+  color: "#273041",
 }
 
 const $rowNativeInput: TextStyle = {
   flex: 1,
   fontSize: 16,
   paddingVertical: 8,
+  color: "#273041",
 }
 
 const $rowTextPressable: ViewStyle = {

@@ -1,5 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react"
 import { FlatList, View, ViewStyle, TextStyle, Alert, TouchableOpacity } from "react-native"
+import { SquarePause, SquarePlay, SquareStop } from "lucide-react-native"
 import { TouchableWithoutFeedback } from "react-native"
 
 import { Button } from "@/components/Button"
@@ -10,7 +11,7 @@ import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
 import { spacing } from "@/theme/spacing"
 
-interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> {}
+interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> { }
 
 export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) => {
   const { route, navigation } = props
@@ -128,22 +129,46 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
         {/* Control Buttons */}
         <View style={$controlButtonsContainer}>
           <Button
-            text={timerState.isRunning ? "⏸️ Pause" : "▶️ Resume"}
+            text={timerState.isRunning ? "Pause" : "Resume"}
             onPress={handlePauseResume}
             style={$pauseResumeButton}
             preset={timerState.isRunning ? "reversed" : "default"}
+            LeftAccessory={(props) => (
+              timerState.isRunning ? (
+                <SquarePause
+                  size={22}
+                  color={timerState.isRunning ? "#FFFFFF" : "#162033"}
+                  // eslint-disable-next-line react-native/no-inline-styles
+                  style={[props.style, { marginEnd: 4 }]}
+                />
+              ) : (
+                <SquarePlay
+                  size={22}
+                  color={"#162033"}
+                  // eslint-disable-next-line react-native/no-inline-styles
+                  style={[props.style, { marginEnd: 4 }]}
+                />
+              )
+            )}
           />
           <Button
-            text="⏹️ Stop & Export"
+            text="Stop"
             onPress={handleStopLecture}
             style={$stopButton}
             preset="filled"
+            LeftAccessory={(props) => (
+              <SquareStop
+                size={22}
+                color="#FFFFFF"
+                // eslint-disable-next-line react-native/no-inline-styles
+                style={[props.style, { marginEnd: 4 }]}
+              />
+            )}
           />
         </View>
 
         {/* Outline Checklist */}
         <View style={$checklistContainer}>
-          <Text preset="subheading" text={outline.title} style={$outlineTitle} />
           <Text style={$checklistHeader}>
             Tap items as you cover them ({checkedItems.size}/{outline.items.length} completed)
           </Text>
@@ -184,31 +209,42 @@ const $contentContainer: ViewStyle = {
 
 const $timerContainer: ViewStyle = {
   alignItems: "center",
-  backgroundColor: "#f8f9fa",
-  borderRadius: spacing.md,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 14,
   padding: spacing.lg,
   marginBottom: spacing.md,
-  borderWidth: 2,
-  borderColor: "#007AFF",
+  borderWidth: 3,
+  borderColor: "#162033",
+  shadowColor: "#0D1624",
+  shadowOffset: { width: 6, height: 6 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 8,
 }
 
 const $timerLabel: TextStyle = {
-  fontSize: 16,
-  color: "#666",
+  fontSize: 14,
+  color: "#4A5563",
   marginBottom: spacing.xs,
+  fontWeight: "500",
 }
 
 const $timerText: TextStyle = {
-  fontSize: 32,
-  fontWeight: "bold",
-  color: "#007AFF",
-  fontFamily: "monospace",
+  fontSize: 36,
+  fontWeight: "700",
+  color: "#FF7A00",
+  fontFamily: "jetBrainsMonoBold",
+  letterSpacing: 1,
+  lineHeight: 44, // prevent visual clipping of glyph ascenders
+  paddingTop: 2, // extra breathing room for Android font metrics
+  textAlign: "center",
 }
 
 const $timerStatus: TextStyle = {
   fontSize: 14,
-  color: "#666",
+  color: "#273041",
   marginTop: spacing.xs,
+  fontWeight: "500",
 }
 
 const $controlButtonsContainer: ViewStyle = {
@@ -282,65 +318,75 @@ const $outlineItem: ViewStyle = {
   paddingVertical: spacing.md,
   paddingHorizontal: spacing.md,
   marginVertical: spacing.xs,
-  backgroundColor: "#f5f5f5",
-  borderRadius: spacing.sm,
-  borderLeftWidth: 4,
-  borderLeftColor: "#007AFF",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 12,
+  borderWidth: 3,
+  borderColor: "#162033",
+  shadowColor: "#0D1624",
+  shadowOffset: { width: 4, height: 4 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 6,
 }
 
 const $outlineItemChecked: ViewStyle = {
-  backgroundColor: "#e8f5e8",
-  borderLeftColor: "#34C759",
+  backgroundColor: "#FFE8D6",
+  borderColor: "#FF7A00",
 }
 
 const $itemNumberContainer: ViewStyle = {
-  width: 32,
-  height: 32,
-  borderRadius: 16,
-  backgroundColor: "#f0f0f0",
+  width: 36,
+  height: 36,
+  borderRadius: 8,
+  backgroundColor: "#FF7A00",
   justifyContent: "center",
   alignItems: "center",
   marginRight: spacing.sm,
+  borderWidth: 2,
+  borderColor: "#162033",
 }
 
 const $itemNumber: TextStyle = {
   fontWeight: "600",
-  color: "#666",
+  color: "#FFFFFF",
+  fontSize: 16,
 }
 
 const $itemNumberChecked: TextStyle = {
-  color: "#34C759",
+  color: "#FFFFFF",
 }
 
 const $outlineItemText: TextStyle = {
   flex: 1,
   fontSize: 16,
-  color: "#333333",
+  color: "#273041",
+  fontWeight: "500",
 }
 
 const $outlineItemTextChecked: TextStyle = {
-  color: "#34C759",
+  color: "#162033",
   textDecorationLine: "line-through",
 }
 
 const $checkbox: ViewStyle = {
-  width: 24,
-  height: 24,
-  borderWidth: 2,
-  borderColor: "#ccc",
-  borderRadius: 4,
+  width: 28,
+  height: 28,
+  borderWidth: 3,
+  borderColor: "#162033",
+  borderRadius: 6,
   justifyContent: "center",
   alignItems: "center",
   marginLeft: spacing.sm,
+  backgroundColor: "#FFFFFF",
 }
 
 const $checkboxChecked: ViewStyle = {
-  backgroundColor: "#34C759",
-  borderColor: "#34C759",
+  backgroundColor: "#FF7A00",
+  borderColor: "#162033",
 }
 
 const $checkmark: TextStyle = {
-  color: "white",
-  fontSize: 16,
+  color: "#FFFFFF",
+  fontSize: 18,
   fontWeight: "bold",
 }

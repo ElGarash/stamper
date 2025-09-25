@@ -64,7 +64,7 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
 
       <View style={$content}>
         {sessions.length === 0 ? (
-          <Text>No recorded sessions for this outline</Text>
+          <Text>No recorded sessions for this outline.</Text>
         ) : (
           <FlatList
             data={sessions}

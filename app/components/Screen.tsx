@@ -42,6 +42,10 @@ interface BaseScreenProps {
    */
   backgroundColor?: string
   /**
+   * If true, applies a neo-brutalist accent backdrop (simple two-tone split) behind content.
+   */
+  neoBrutalistAccent?: boolean
+  /**
    * System bar setting. Defaults to dark.
    */
   systemBarStyle?: SystemBarStyle
@@ -245,6 +249,7 @@ export function Screen(props: ScreenProps) {
   } = useAppTheme()
   const {
     backgroundColor,
+    neoBrutalistAccent,
     KeyboardAvoidingViewProps,
     keyboardOffset = 0,
     safeAreaEdges,
@@ -262,6 +267,33 @@ export function Screen(props: ScreenProps) {
         $containerInsets,
       ]}
     >
+      {neoBrutalistAccent && (
+        <View
+          // background decorative layer
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: colors.palette.neutral100,
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "40%",
+              backgroundColor: colors.palette.primary100,
+              borderBottomWidth: 3,
+              borderColor: colors.palette.neutral800,
+            }}
+          />
+        </View>
+      )}
       <SystemBars
         style={systemBarStyle || (themeContext === "dark" ? "light" : "dark")}
         {...SystemBarsProps}
