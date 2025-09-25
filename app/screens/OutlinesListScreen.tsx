@@ -166,9 +166,6 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
         ) : (
           <>
             <View style={themed($headerContainer)}>
-              <Text preset="subheading" style={themed($headerText)}>
-                {outlines.length} outline{outlines.length !== 1 ? "s" : ""}
-              </Text>
               <TouchableOpacity style={themed($importIcon)} onPress={handleImportMarkdown}>
                 <ListPlus size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -210,19 +207,13 @@ const $loadingContainer: ViewStyle = {
 
 const $headerContainer: ViewStyle = {
   flexDirection: "row",
-  justifyContent: "space-between",
+  justifyContent: "flex-end",
   alignItems: "center",
   paddingVertical: spacing.md,
-  paddingHorizontal: spacing.xs,
-}
-
-const $headerText: ViewStyle = {
-  flex: 1,
 }
 
 const $importIcon: ViewStyle = {
-  minWidth: 80,
-  paddingHorizontal: spacing.md,
+  paddingLeft: spacing.md,
 }
 
 const $listContainer: ViewStyle = {

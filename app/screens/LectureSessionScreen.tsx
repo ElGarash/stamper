@@ -8,6 +8,7 @@ import { Text } from "@/components/Text"
 import { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { loadLectureSessions } from "@/services/lectureSessionStorage"
 import { getOutlineById } from "@/services/outlineStorage"
+import { colors } from "@/theme/colors"
 
 type Props = AppStackScreenProps<"LectureSession">
 
@@ -120,13 +121,13 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
               <Text>{session.pausedIntervals.length}</Text>
             </View>
 
-            <View style={{ marginTop: 12 }}>
+            <View style={styles.section}>
               <Text preset="subheading">YouTube Timestamps</Text>
               <Text style={styles.code}>{formatYouTubeTimestamps(session, outlineItemsMap)}</Text>
               <Button text="Copy Timestamps" onPress={handleCopyTimestamps} />
             </View>
 
-            <View style={{ marginTop: 12 }}>
+            <View style={styles.section}>
               <Text preset="subheading">FFmpeg Trim Commands</Text>
               <Text style={styles.code}>{generateFFmpegTrimCommand(session)}</Text>
               <Button text="Copy FFmpeg" onPress={handleCopyFFmpeg} />
@@ -140,7 +141,7 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
 
 const styles = StyleSheet.create({
   code: {
-    backgroundColor: "#f3f3f3",
+    backgroundColor: colors.palette.neutral200,
     borderRadius: 4,
     fontFamily: "monospace",
     marginVertical: 8,
@@ -154,5 +155,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 6,
+  },
+  section: {
+    marginTop: 12,
   },
 })

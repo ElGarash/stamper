@@ -14,7 +14,7 @@ import { getOutlineById, updateOutline } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> { }
+interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> {}
 
 export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
   const { route, navigation } = props
@@ -200,7 +200,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
         />
 
         <View style={themed($itemsSection)}>
-          <Text preset="subheading" text="Items" style={themed($sectionLabel)} />
+          <Text preset="subheading" text="Topics" style={themed($sectionLabel)} />
           <DraggableFlatList
             data={items}
             keyExtractor={(item) => item.id}

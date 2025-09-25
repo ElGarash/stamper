@@ -1,5 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react"
 import { FlatList, View, ViewStyle, TextStyle } from "react-native"
+import { Play, FolderClock, SquarePen } from "lucide-react-native"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -9,6 +10,7 @@ import { Text } from "@/components/Text"
 import { Outline } from "@/models/Outline"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { loadOutlines } from "@/services/outlineStorage"
+import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
 interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> {}
@@ -19,6 +21,7 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   const [outline, setOutline] = useState<Outline | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { theme } = useAppTheme()
 
   const loadOutline = useCallback(async () => {
     try {
@@ -133,9 +136,46 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
 
         {/* Action Buttons */}
         <View style={$actionButtonsContainer}>
-          <Button text="🎤 Start Lecture" onPress={handleStartLecture} style={$startButton} />
-          <Button text="📚 Recorded Sessions" onPress={handleShowSessions} style={$startButton} />
-          <Button text="✏️ Edit" preset="reversed" onPress={handleEdit} style={$editButton} />
+          <Button
+            accessibilityLabel="Start Lecture"
+            onPress={handleStartLecture}
+            style={$startButton}
+            LeftAccessory={(props) => (
+              <Play
+                color={theme.colors.text}
+                size={24}
+                // eslint-disable-next-line react-native/no-inline-styles
+                style={[props.style, { marginEnd: 0 }]}
+              />
+            )}
+          />
+          <Button
+            accessibilityLabel="Recorded Sessions"
+            onPress={handleShowSessions}
+            style={$startButton}
+            LeftAccessory={(props) => (
+              <FolderClock
+                color={theme.colors.text}
+                size={24}
+                // eslint-disable-next-line react-native/no-inline-styles
+                style={[props.style, { marginEnd: 0 }]}
+              />
+            )}
+          />
+          <Button
+            accessibilityLabel="Edit Outline"
+            preset="reversed"
+            onPress={handleEdit}
+            style={$editButton}
+            LeftAccessory={(props) => (
+              <SquarePen
+                color={theme.colors.palette.neutral100}
+                size={24}
+                // eslint-disable-next-line react-native/no-inline-styles
+                style={[props.style, { marginEnd: 0 }]}
+              />
+            )}
+          />
         </View>
 
         {/* Outline Content */}

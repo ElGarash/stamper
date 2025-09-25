@@ -1,8 +1,11 @@
 import { FC, useCallback, useState } from "react"
-import { View, ViewStyle, FlatList } from "react-native"
+import { View, ViewStyle, FlatList, TouchableOpacity } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
+import {
+  ClockArrowDown as LucideClockArrowDown,
+  ClockArrowUp as LucideClockArrowUp,
+} from "lucide-react-native"
 
-import { Button } from "@/components/Button"
 import { Header } from "@/components/Header"
 import { ListItem } from "@/components/ListItem"
 import { Screen } from "@/components/Screen"
@@ -41,30 +44,40 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
   return (
     <Screen preset="fixed">
       <Header title="Recorded Sessions" leftIcon="back" onLeftPress={() => navigation.goBack()} />
+      {/* Row directly beneath the title containing only the sort icon aligned to the right */}
+      <View style={$sortRow}>
+        <View style={$spacer} />
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Toggle sort order"
+          onPress={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+        >
+          {sortOrder === "newest" ? (
+            // Newest currently -> icon suggests switching to oldest (narrow-wide)
+            <LucideClockArrowDown />
+          ) : (
+            <LucideClockArrowUp />
+          )}
+        </TouchableOpacity>
+      </View>
 
       <View style={$content}>
         {sessions.length === 0 ? (
           <Text>No recorded sessions for this outline</Text>
         ) : (
-          <>
-            <Button
-              text={`Sort: ${sortOrder === "newest" ? "Oldest First" : "Newest First"}`}
-              onPress={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-              style={{ marginBottom: spacing.md }}
-            />
-            <FlatList
-              data={sessions}
-              keyExtractor={(s) => s.id}
-              renderItem={({ item }) => (
-                <ListItem
-                  text={new Date(item.startedAt).toLocaleString()}
-                  onPress={() => navigation.navigate("LectureSession", { sessionId: item.id })}
-                  bottomSeparator
-                  RightComponent={<Text size="xs">{item.itemTimestamps.length} marks</Text>}
-                />
-              )}
-            />
-          </>
+          <FlatList
+            data={sessions}
+            keyExtractor={(s) => s.id}
+            renderItem={({ item }) => (
+              <ListItem
+                text={new Date(item.startedAt).toLocaleString()}
+                onPress={() => navigation.navigate("LectureSession", { sessionId: item.id })}
+                bottomSeparator
+                RightComponent={<Text size="xs">{item.itemTimestamps.length} marks</Text>}
+              />
+            )}
+          />
         )}
       </View>
     </Screen>
@@ -74,3 +87,13 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
 const $content: ViewStyle = {
   padding: spacing.md,
 }
+
+const $sortRow: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  paddingHorizontal: spacing.md,
+  marginTop: spacing.sm,
+  marginBottom: spacing.xs,
+}
+const $spacer: ViewStyle = { flex: 1 }
