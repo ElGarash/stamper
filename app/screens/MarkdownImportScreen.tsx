@@ -50,10 +50,10 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
             `Imported "${result.outline.title}" with ${result.outline.items.length} items.`,
             [
               {
-                text: "OK",
+                text: "Open Outline",
                 onPress: () => {
-                  // Navigate to outline list to show the saved outline
-                  navigation.navigate("OutlinesList")
+                  // Navigate directly to the newly created outline's preview screen
+                  navigation.replace("OutlinePreview", { outlineId: result.outline!.id })
                 },
               },
             ],
@@ -127,23 +127,6 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
 
   const renderImportModeSelection = () => (
     <View>
-      <Text preset="heading" style={{ marginBottom: spacing.md }}>
-        Choose Import Method
-      </Text>
-
-      <Card
-        style={{ marginBottom: spacing.sm }}
-        ContentComponent={
-          <View>
-            <Text preset="subheading">📁 Import from File</Text>
-            <Text style={styles.descriptionText}>
-              Select a markdown (.md) or text file from your device
-            </Text>
-          </View>
-        }
-        onPress={() => setImportMode("file")}
-      />
-
       <Card
         style={hasClipboardContent ? styles.cardEnabled : styles.cardDisabled}
         ContentComponent={

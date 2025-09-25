@@ -23,11 +23,11 @@ This to-do list is based on the specification in `spec.md`.
   - [x] "Create New Outline" flow
   - [x] Clicking on an outline opens it in preview mode
 - [x] Swipe interactions to delete or edit outlines
-- [ ] Create "Outline Editor" screen
+- [x] Create "Outline Editor" screen
   - [x] Edit outline title inline
   - [x] Drag & drop items
   - [x] Add new items
-  - [ ] Delete items
+  - [x] Delete items
   - [x] Edit item inline
   - [x] Save changes and navigate back
 
