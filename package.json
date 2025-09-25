@@ -29,6 +29,7 @@
     "build:android:prod": "eas build --profile production --platform android --local"
   },
   "dependencies": {
+    "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/space-grotesk": "^0.4.0",
     "@expo/metro-runtime": "~5.0.4",
     "@notionhq/client": "^5.1.0",

@@ -3,29 +3,28 @@
 
 import { Platform } from "react-native"
 import {
-  SpaceGrotesk_300Light as spaceGroteskLight,
-  SpaceGrotesk_400Regular as spaceGroteskRegular,
-  SpaceGrotesk_500Medium as spaceGroteskMedium,
-  SpaceGrotesk_600SemiBold as spaceGroteskSemiBold,
-  SpaceGrotesk_700Bold as spaceGroteskBold,
-} from "@expo-google-fonts/space-grotesk"
+  JetBrainsMono_300Light as jetBrainsMonoLight,
+  JetBrainsMono_400Regular as jetBrainsMonoRegular,
+  JetBrainsMono_500Medium as jetBrainsMonoMedium,
+  JetBrainsMono_600SemiBold as jetBrainsMonoSemiBold,
+  JetBrainsMono_700Bold as jetBrainsMonoBold,
+} from "@expo-google-fonts/jetbrains-mono"
 
 export const customFontsToLoad = {
-  spaceGroteskLight,
-  spaceGroteskRegular,
-  spaceGroteskMedium,
-  spaceGroteskSemiBold,
-  spaceGroteskBold,
+  jetBrainsMonoLight,
+  jetBrainsMonoRegular,
+  jetBrainsMonoMedium,
+  jetBrainsMonoSemiBold,
+  jetBrainsMonoBold,
 }
 
 const fonts = {
-  spaceGrotesk: {
-    // Cross-platform Google font.
-    light: "spaceGroteskLight",
-    normal: "spaceGroteskRegular",
-    medium: "spaceGroteskMedium",
-    semiBold: "spaceGroteskSemiBold",
-    bold: "spaceGroteskBold",
+  jetBrainsMono: {
+    light: "jetBrainsMonoLight",
+    normal: "jetBrainsMonoRegular",
+    medium: "jetBrainsMonoMedium",
+    semiBold: "jetBrainsMonoSemiBold",
+    bold: "jetBrainsMonoBold",
   },
   helveticaNeue: {
     // iOS only font.
@@ -59,7 +58,7 @@ export const typography = {
   /**
    * The primary font. Used in most places.
    */
-  primary: fonts.spaceGrotesk,
+  primary: fonts.jetBrainsMono,
   /**
    * An alternate font used for perhaps titles and stuff.
    */
@@ -67,5 +66,5 @@ export const typography = {
   /**
    * Lets get fancy with a monospace font!
    */
-  code: Platform.select({ ios: fonts.courier, android: fonts.monospace }),
+  code: fonts.jetBrainsMono,
 }
