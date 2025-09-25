@@ -14,7 +14,7 @@ import { getOutlineById, updateOutline } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> { }
+interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> {}
 
 export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
   const { route, navigation } = props

@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react"
 import { FlatList, View, ViewStyle, TextStyle, Alert, TouchableOpacity } from "react-native"
-import { SquarePause, SquarePlay, SquareStop } from "lucide-react-native"
 import { TouchableWithoutFeedback } from "react-native"
+import { SquarePause, SquarePlay, SquareStop } from "lucide-react-native"
 
 import { Button } from "@/components/Button"
 import { Header } from "@/components/Header"
@@ -11,7 +11,7 @@ import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
 import { spacing } from "@/theme/spacing"
 
-interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> { }
+interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> {}
 
 export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) => {
   const { route, navigation } = props
@@ -133,7 +133,7 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
             onPress={handlePauseResume}
             style={$pauseResumeButton}
             preset={timerState.isRunning ? "reversed" : "default"}
-            LeftAccessory={(props) => (
+            LeftAccessory={(props) =>
               timerState.isRunning ? (
                 <SquarePause
                   size={22}
@@ -149,7 +149,7 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
                   style={[props.style, { marginEnd: 4 }]}
                 />
               )
-            )}
+            }
           />
           <Button
             text="Stop"
@@ -283,11 +283,6 @@ const $pausedBackdropText: TextStyle = {
   fontSize: 18,
   textAlign: "center",
   paddingHorizontal: spacing.md,
-}
-
-const $outlineTitle: TextStyle = {
-  textAlign: "center",
-  marginBottom: spacing.sm,
 }
 
 const $checklistHeader: TextStyle = {

@@ -1,4 +1,4 @@
-import { ReactNode, useRef, useState } from "react"
+import { ReactNode, useRef, useState, useMemo } from "react"
 import {
   KeyboardAvoidingView,
   KeyboardAvoidingViewProps,
@@ -259,6 +259,20 @@ export function Screen(props: ScreenProps) {
 
   const $containerInsets = useSafeAreaInsetsStyle(safeAreaEdges)
 
+  // Memoized dynamic styles to avoid inline style objects in JSX while still reacting to theme changes
+  const accentOverlayStyle = useMemo<ViewStyle>(
+    () => ({ ...$accentOverlay, backgroundColor: colors.palette.neutral100 }),
+    [colors.palette.neutral100],
+  )
+  const accentTopBarStyle = useMemo<ViewStyle>(
+    () => ({
+      ...$accentTopBar,
+      backgroundColor: colors.palette.primary100,
+      borderColor: colors.palette.neutral800,
+    }),
+    [colors.palette.primary100, colors.palette.neutral800],
+  )
+
   return (
     <View
       style={[
@@ -268,30 +282,11 @@ export function Screen(props: ScreenProps) {
       ]}
     >
       {neoBrutalistAccent && (
-        <View
-          // background decorative layer
+        <View // background decorative layer
           pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: colors.palette.neutral100,
-          }}
+          style={accentOverlayStyle}
         >
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "40%",
-              backgroundColor: colors.palette.primary100,
-              borderBottomWidth: 3,
-              borderColor: colors.palette.neutral800,
-            }}
-          />
+          <View style={accentTopBarStyle} />
         </View>
       )}
       <SystemBars
@@ -334,4 +329,22 @@ const $justifyFlexEnd: ViewStyle = {
 const $innerStyle: ViewStyle = {
   justifyContent: "flex-start",
   alignItems: "stretch",
+}
+
+// Accent backdrop layers (extracted from previous inline styles to satisfy lint rule)
+const $accentOverlay: ViewStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+}
+
+const $accentTopBar: ViewStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: "40%",
+  borderBottomWidth: 3,
 }

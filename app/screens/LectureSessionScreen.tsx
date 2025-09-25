@@ -1,5 +1,6 @@
 import { View, ScrollView, StyleSheet } from "react-native"
 import Clipboard from "@react-native-clipboard/clipboard"
+import { Copy } from "lucide-react-native"
 
 import { Button } from "@/components/Button"
 import { Header } from "@/components/Header"
@@ -75,10 +76,22 @@ function generateFFmpegTrimCommand(
   return `${cmds}\n# Then concat parts into ${outputFile}`
 }
 
+function computeTotalAndEdited(session: any) {
+  const start = session.startedAt
+  const end = session.completedAt || Date.now()
+  const total = end - start
+  const paused = (session.pausedIntervals || []).reduce((acc: number, p: any) => {
+    if (!p.end || p.end === 0) return acc
+    return acc + (p.end - p.start)
+  }, 0)
+  return { total, edited: total - paused }
+}
+
 export const LectureSessionScreen = ({ route, navigation }: Props) => {
   const { sessionId } = route.params
   const sessions = loadLectureSessions()
   const session = sessions.find((s) => s.id === sessionId) as any | undefined
+  const durations = session ? computeTotalAndEdited(session) : null
 
   // Get outline items map for proper labels
   const outline = session ? getOutlineById(session.outlineId) : null
@@ -121,16 +134,26 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
               <Text>{session.pausedIntervals.length}</Text>
             </View>
 
-            <View style={styles.section}>
-              <Text preset="subheading">YouTube Timestamps</Text>
-              <Text style={styles.code}>{formatYouTubeTimestamps(session, outlineItemsMap)}</Text>
-              <Button text="Copy Timestamps" onPress={handleCopyTimestamps} />
+            <View style={styles.row}>
+              <Text>Total time:</Text>
+              <Text>{durations ? formatDuration(durations.total) : "--"}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text>Edited time:</Text>
+              <Text>{durations ? formatDuration(durations.edited) : "--"}</Text>
             </View>
 
             <View style={styles.section}>
-              <Text preset="subheading">FFmpeg Trim Commands</Text>
-              <Text style={styles.code}>{generateFFmpegTrimCommand(session)}</Text>
-              <Button text="Copy FFmpeg" onPress={handleCopyFFmpeg} />
+              <View style={styles.sectionHeaderRow}>
+                <Text preset="subheading">Timestamps</Text>
+                <Copy size={20} color={colors.palette.neutral900} onPress={handleCopyTimestamps} />
+              </View>
+              <Text style={styles.code}>{formatYouTubeTimestamps(session, outlineItemsMap)}</Text>
+            </View>
+
+            <View style={styles.section}>
+              <Button text="Copy editing script" onPress={handleCopyFFmpeg} />
             </View>
           </>
         )}
@@ -158,5 +181,10 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: 12,
+  },
+  sectionHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 })
