@@ -1,17 +1,20 @@
 import { FC, useCallback, useState } from "react"
-import { View, ViewStyle, FlatList, TouchableOpacity } from "react-native"
+import { View, ViewStyle, FlatList, TouchableOpacity, Alert, Animated } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 import {
   ClockArrowDown as LucideClockArrowDown,
   ClockArrowUp as LucideClockArrowUp,
 } from "lucide-react-native"
+import { Trash } from "lucide-react-native"
+import { Swipeable } from "react-native-gesture-handler"
 
 import { Header } from "@/components/Header"
 import { ListItem } from "@/components/ListItem"
 import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
-import { getSessionsForOutline } from "@/services/lectureSessionStorage"
+import { getSessionsForOutline, deleteLectureSession } from "@/services/lectureSessionStorage"
+import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
 type Props = AppStackScreenProps<"LectureSessionsList">
@@ -20,6 +23,7 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
   const { outlineId } = route.params
   const [sessions, setSessions] = useState<any[]>([])
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+  const { theme } = useAppTheme()
 
   const load = useCallback(() => {
     const allSessions = getSessionsForOutline(outlineId)
@@ -34,6 +38,62 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
     })
     setSessions(sorted)
   }, [outlineId, sortOrder])
+
+  const handleDelete = useCallback(
+    (sessionId: string) => {
+      const session = sessions.find((s) => s.id === sessionId)
+      const dateLabel = session ? new Date(session.startedAt).toLocaleString() : "this session"
+      Alert.alert("Delete Session", `Are you sure you want to delete ${dateLabel}?`, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            const success = deleteLectureSession(sessionId)
+            if (success) {
+              load()
+            } else {
+              Alert.alert("Error", "Failed to delete session")
+            }
+          },
+        },
+      ])
+    },
+    [sessions, load],
+  )
+
+  const renderRightActions = useCallback(
+    (
+      sessionId: string,
+      dragX: Animated.AnimatedInterpolation<number>,
+      progress: Animated.AnimatedInterpolation<number>,
+    ) => {
+      const opacity = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+        extrapolate: "clamp",
+      })
+
+      const translateXDelete = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [60, 0],
+        extrapolate: "clamp",
+      })
+
+      return (
+        <View style={$swipeActionsContainer}>
+          <Animated.View
+            style={[$deleteIcon, { opacity, transform: [{ translateX: translateXDelete }] }]}
+          >
+            <TouchableOpacity onPress={() => handleDelete(sessionId)}>
+              <Trash size={24} color={theme.colors.error} />
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      )
+    },
+    [handleDelete, theme],
+  )
 
   useFocusEffect(
     useCallback(() => {
@@ -70,12 +130,22 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
             data={sessions}
             keyExtractor={(s) => s.id}
             renderItem={({ item }) => (
-              <ListItem
-                text={new Date(item.startedAt).toLocaleString()}
-                onPress={() => navigation.navigate("LectureSession", { sessionId: item.id })}
-                bottomSeparator
-                RightComponent={<Text size="xs">{item.itemTimestamps.length} marks</Text>}
-              />
+              <Swipeable
+                renderRightActions={(progress, dragX) =>
+                  renderRightActions(item.id, dragX, progress)
+                }
+                friction={2}
+                overshootFriction={8}
+                rightThreshold={40}
+              >
+                <ListItem
+                  text={new Date(item.startedAt).toLocaleString()}
+                  onPress={() => navigation.navigate("LectureSession", { sessionId: item.id })}
+                  onLongPress={() => handleDelete(item.id)}
+                  bottomSeparator
+                  RightComponent={<Text size="xs">{item.itemTimestamps.length} marks</Text>}
+                />
+              </Swipeable>
             )}
           />
         )}
@@ -97,3 +167,18 @@ const $sortRow: ViewStyle = {
   marginBottom: spacing.xs,
 }
 const $spacer: ViewStyle = { flex: 1 }
+
+const $swipeActionsContainer: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: spacing.sm,
+  backgroundColor: "transparent",
+}
+
+const $deleteIcon: ViewStyle = {
+  minWidth: 80,
+  minHeight: 56,
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: spacing.xs,
+}

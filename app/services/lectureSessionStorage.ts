@@ -41,3 +41,14 @@ export function getSessionsForOutline(outlineId: string): LectureSession[] {
     return []
   }
 }
+
+export function deleteLectureSession(sessionId: string): boolean {
+  try {
+    const existing = loadLectureSessions()
+    const filtered = existing.filter((s) => s.id !== sessionId)
+    return saveLectureSessions(filtered)
+  } catch (error) {
+    console.error("Failed to delete lecture session:", error)
+    return false
+  }
+}

@@ -11,7 +11,7 @@ import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
 import { spacing } from "@/theme/spacing"
 
-interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> { }
+interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> {}
 
 export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) => {
   const { route, navigation } = props
