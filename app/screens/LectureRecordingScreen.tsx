@@ -11,7 +11,7 @@ import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
 import { spacing } from "@/theme/spacing"
 
-interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> {}
+interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> { }
 
 export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) => {
   const { route, navigation } = props
@@ -38,10 +38,18 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
     }
   }, [])
 
-  // Start the lecture timer when component mounts
-  useEffect(() => {
-    lectureTimerService.startLecture(outline)
-  }, [outline])
+  // We no longer auto-start; user explicitly starts the recording.
+  // This prevents the screen from briefly (or permanently) showing a paused state at 0s.
+
+  const hasStarted = timerState.startTime !== null
+  const isPaused = hasStarted && !timerState.isRunning
+
+  const handleStartLecture = useCallback(() => {
+    if (!hasStarted) {
+      lectureTimerService.startLecture(outline)
+      setCheckedItems(new Set()) // reset any prior state just in case
+    }
+  }, [hasStarted, outline])
 
   const handleToggleItem = useCallback(
     (itemId: string) => {
@@ -57,12 +65,13 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
   )
 
   const handlePauseResume = useCallback(() => {
+    if (!hasStarted) return
     if (timerState.isRunning) {
       lectureTimerService.pauseLecture()
     } else {
       lectureTimerService.resumeLecture()
     }
-  }, [timerState.isRunning])
+  }, [timerState.isRunning, hasStarted])
 
   const handleStopLecture = useCallback(() => {
     Alert.alert("Stop Lecture", "Are you sure you want to stop the lecture recording?", [
@@ -122,39 +131,61 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
         <View style={$timerContainer}>
           <Text style={$timerLabel}>Elapsed Time</Text>
           <Text style={$timerText}>{lectureTimerService.formatTime(elapsedTime, true)}</Text>
-          <Text style={$timerStatus}>{timerState.isRunning ? "🔴 Recording" : "⏸️ Paused"}</Text>
+          <Text style={$timerStatus}>
+            {!hasStarted && "🟡 Not started"}
+            {hasStarted && timerState.isRunning && "🔴 Recording"}
+            {isPaused && "⏸️ Paused"}
+          </Text>
         </View>
 
         {/* Control Buttons */}
         <View style={$controlButtonsContainer}>
-          <Button
-            text={timerState.isRunning ? "Pause" : "Resume"}
-            onPress={handlePauseResume}
-            style={$pauseResumeButton}
-            preset={timerState.isRunning ? "reversed" : "default"}
-            LeftAccessory={(props) =>
-              timerState.isRunning ? (
-                <SquarePause
-                  size={22}
-                  color={timerState.isRunning ? "#FFFFFF" : "#162033"}
-                  // eslint-disable-next-line react-native/no-inline-styles
-                  style={[props.style, { marginEnd: 4 }]}
-                />
-              ) : (
+          {!hasStarted ? (
+            <Button
+              text="Start"
+              onPress={handleStartLecture}
+              style={$pauseResumeButton}
+              preset="filled"
+              LeftAccessory={(props) => (
                 <SquarePlay
                   size={22}
-                  color={"#162033"}
+                  color="#FFFFFF"
                   // eslint-disable-next-line react-native/no-inline-styles
                   style={[props.style, { marginEnd: 4 }]}
                 />
-              )
-            }
-          />
+              )}
+            />
+          ) : (
+            <Button
+              text={timerState.isRunning ? "Pause" : "Resume"}
+              onPress={handlePauseResume}
+              style={$pauseResumeButton}
+              preset={timerState.isRunning ? "reversed" : "default"}
+              LeftAccessory={(props) =>
+                timerState.isRunning ? (
+                  <SquarePause
+                    size={22}
+                    color={timerState.isRunning ? "#FFFFFF" : "#162033"}
+                    // eslint-disable-next-line react-native/no-inline-styles
+                    style={[props.style, { marginEnd: 4 }]}
+                  />
+                ) : (
+                  <SquarePlay
+                    size={22}
+                    color={"#162033"}
+                    // eslint-disable-next-line react-native/no-inline-styles
+                    style={[props.style, { marginEnd: 4 }]}
+                  />
+                )
+              }
+            />
+          )}
           <Button
             text="Stop"
             onPress={handleStopLecture}
             style={$stopButton}
             preset="filled"
+            disabled={!hasStarted}
             LeftAccessory={(props) => (
               <SquareStop
                 size={22}
@@ -181,7 +212,7 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
           />
         </View>
         {/* Paused Backdrop - full screen overlay when paused */}
-        {!timerState.isRunning && (
+        {isPaused && (
           <TouchableWithoutFeedback onPress={() => lectureTimerService.resumeLecture()}>
             <View style={$pausedBackdrop}>
               <Text style={$pausedBackdropText}>Paused — tap anywhere to resume</Text>
