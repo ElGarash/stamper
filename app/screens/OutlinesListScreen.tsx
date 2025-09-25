@@ -3,6 +3,7 @@ import {
   FlatList,
   View,
   ViewStyle,
+  TextStyle,
   Alert,
   RefreshControl,
   TouchableOpacity,
@@ -22,7 +23,7 @@ import { deleteOutline, loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> {}
+interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> { }
 
 export const OutlinesListScreen: FC<OutlinesListScreenProps> = function OutlinesListScreen(props) {
   const { navigation } = props
@@ -153,27 +154,29 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
   }, [navigation, loadOutlinesData])
 
   const renderOutlineItem = ({ item: outline }: { item: Outline }) => (
-    <Swipeable
-      renderRightActions={(progress, dragX) => renderRightActions(outline, dragX, progress)}
-      friction={2}
-      overshootFriction={8}
-      rightThreshold={40}
-    >
-      <ListItem
-        text={outline.title}
-        bottomSeparator
-        onPress={() => handleOutlinePress(outline)}
-        RightComponent={
-          <View style={themed($itemInfoContainer)}>
-            <Text size="xs" style={themed($itemCount)}>
-              {outline.items.length} topics
-            </Text>
-          </View>
-        }
-        containerStyle={themed($itemContainer)}
-        onLongPress={() => handleDeleteOutline(outline.id, outline.title)}
-      />
-    </Swipeable>
+    <View style={themed($itemWrapper)}>
+      <Swipeable
+        renderRightActions={(progress, dragX) => renderRightActions(outline, dragX, progress)}
+        friction={2}
+        overshootFriction={8}
+        rightThreshold={40}
+      >
+        <ListItem
+          text={outline.title}
+          onPress={() => handleOutlinePress(outline)}
+          RightComponent={
+            <View style={themed($badge)}>
+              <Text size="xxs" style={themed($badgeText)}>
+                {outline.items.length} {outline.items.length === 1 ? "topic" : "topics"}
+              </Text>
+            </View>
+          }
+          containerStyle={themed($listItemContainerNeo)}
+          style={themed($touchableNeo)}
+          onLongPress={() => handleDeleteOutline(outline.id, outline.title)}
+        />
+      </Swipeable>
+    </View>
   )
 
   const renderEmptyState = () => (
@@ -265,18 +268,52 @@ const $listContent: ViewStyle = {
   paddingBottom: spacing.lg,
 }
 
-const $itemContainer: ViewStyle = {
+// Neo-brutalist list item styling
+const $itemWrapper: ViewStyle = {
+  marginBottom: spacing.sm,
+}
+
+const $listItemContainerNeo: ViewStyle = {
+  // Remove default separators & alignment from ListItem container wrapper; we style inner touchable instead
+}
+
+const $touchableNeo: ViewStyle = {
+  backgroundColor: "#FFFFFF",
+  borderWidth: 3,
+  borderColor: "#162033",
+  borderRadius: 14,
+  paddingVertical: spacing.sm,
+  paddingHorizontal: spacing.md,
+  shadowColor: "#0D1624",
+  shadowOffset: { width: 6, height: 6 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 6,
   alignItems: "center",
 }
 
-const $itemInfoContainer: ViewStyle = {
-  alignItems: "center",
+const $badge: ViewStyle = {
+  marginLeft: spacing.sm,
+  paddingHorizontal: spacing.sm,
+  paddingVertical: spacing.xxs,
+  borderWidth: 2,
+  borderColor: "#162033",
+  backgroundColor: "#FFCFA8",
+  borderRadius: 8,
+  shadowColor: "#0D1624",
+  shadowOffset: { width: 3, height: 3 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+  elevation: 3,
   justifyContent: "center",
-  minHeight: 56, // Match the ListItem height
+  alignItems: "center",
+  minHeight: 28,
 }
 
-const $itemCount: ViewStyle = {
-  opacity: 0.6,
+const $badgeText: TextStyle = {
+  fontWeight: "600",
+  letterSpacing: 0.5,
+  textTransform: "uppercase",
 }
 
 const $swipeActionsContainer: ViewStyle = {

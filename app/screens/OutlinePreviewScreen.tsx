@@ -13,7 +13,7 @@ import { loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> {}
+interface OutlinePreviewScreenProps extends AppStackScreenProps<"OutlinePreview"> { }
 
 export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   const { route, navigation } = props
