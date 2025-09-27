@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Alert, View, ViewStyle, TextStyle, TouchableOpacity } from "react-native"
 import { GripVertical, Plus, Trash } from "lucide-react-native"
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist"
-import { Swipeable } from "react-native-gesture-handler"
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable"
 
 import { Header } from "@/components/Header"
 import { Screen } from "@/components/Screen"
@@ -221,7 +221,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
               const isEditing = editingItemId === item.id
               return (
                 <ScaleDecorator activeScale={1.01}>
-                  <Swipeable
+                  <ReanimatedSwipeable
                     overshootRight={false}
                     renderRightActions={() => (
                       <View style={themed($swipeActionsContainer)}>
@@ -273,7 +273,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
                         </TouchableOpacity>
                       )}
                     </View>
-                  </Swipeable>
+                  </ReanimatedSwipeable>
                 </ScaleDecorator>
               )
             }}
