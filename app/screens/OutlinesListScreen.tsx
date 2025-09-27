@@ -7,10 +7,15 @@ import {
   Alert,
   RefreshControl,
   TouchableOpacity,
-  Animated,
 } from "react-native"
 import { SquarePen, Trash, ListPlus } from "lucide-react-native"
-import { Swipeable } from "react-native-gesture-handler"
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable"
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+  SharedValue,
+} from "react-native-reanimated"
 
 import { EmptyState } from "@/components/EmptyState"
 import { Header } from "@/components/Header"
@@ -23,7 +28,57 @@ import { deleteOutline, loadOutlines } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
-interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> { }
+// New component for right actions
+const RightSwipeActions = ({
+  progress,
+  onPressDelete,
+  onPressEdit,
+  themed,
+  theme,
+}: {
+  progress: SharedValue<number>
+  onPressDelete: () => void
+  onPressEdit: () => void
+  themed: any
+  theme: any
+}) => {
+  const editAnimatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP)
+    const translateX = interpolate(progress.value, [0, 1], [40, 0], Extrapolation.CLAMP)
+
+    return {
+      opacity,
+      transform: [{ translateX }],
+    }
+  })
+
+  const deleteAnimatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP)
+    const translateX = interpolate(progress.value, [0, 1], [60, 0], Extrapolation.CLAMP)
+
+    return {
+      opacity,
+      transform: [{ translateX }],
+    }
+  })
+
+  return (
+    <View style={themed($swipeActionsContainer)}>
+      <Animated.View style={[themed($editIcon), editAnimatedStyle]}>
+        <TouchableOpacity onPress={onPressEdit}>
+          <SquarePen size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+      </Animated.View>
+      <Animated.View style={[themed($deleteIcon), deleteAnimatedStyle]}>
+        <TouchableOpacity onPress={onPressDelete}>
+          <Trash size={24} color={theme.colors.error} />
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  )
+}
+
+interface OutlinesListScreenProps extends AppStackScreenProps<"OutlinesList"> {}
 
 export const OutlinesListScreen: FC<OutlinesListScreenProps> = function OutlinesListScreen(props) {
   const { navigation } = props
@@ -88,50 +143,15 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
   )
 
   const renderRightActions = useCallback(
-    (
-      outline: Outline,
-      dragX: Animated.AnimatedInterpolation<number>,
-      progress: Animated.AnimatedInterpolation<number>,
-    ) => {
-      // Interpolate opacity based on swipe progress (0 -> 1)
-      const opacity = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-      })
-
-      // Slight translate to make it feel smoother
-      const translateXEdit = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [40, 0],
-        extrapolate: "clamp",
-      })
-      const translateXDelete = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [60, 0],
-        extrapolate: "clamp",
-      })
-
+    (outline: Outline, progress: SharedValue<number>) => {
       return (
-        <View style={themed($swipeActionsContainer)}>
-          <Animated.View
-            style={[themed($editIcon), { opacity, transform: [{ translateX: translateXEdit }] }]}
-          >
-            <TouchableOpacity onPress={() => handleEditOutline(outline)}>
-              <SquarePen size={24} color={theme.colors.text} />
-            </TouchableOpacity>
-          </Animated.View>
-          <Animated.View
-            style={[
-              themed($deleteIcon),
-              { opacity, transform: [{ translateX: translateXDelete }] },
-            ]}
-          >
-            <TouchableOpacity onPress={() => handleDeleteOutline(outline.id, outline.title)}>
-              <Trash size={24} color={theme.colors.error} />
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+        <RightSwipeActions
+          progress={progress}
+          onPressDelete={() => handleDeleteOutline(outline.id, outline.title)}
+          onPressEdit={() => handleEditOutline(outline)}
+          themed={themed}
+          theme={theme}
+        />
       )
     },
     [handleDeleteOutline, handleEditOutline, themed, theme],
@@ -155,8 +175,8 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
 
   const renderOutlineItem = ({ item: outline }: { item: Outline }) => (
     <View style={themed($itemWrapper)}>
-      <Swipeable
-        renderRightActions={(progress, dragX) => renderRightActions(outline, dragX, progress)}
+      <ReanimatedSwipeable
+        renderRightActions={(progress) => renderRightActions(outline, progress)}
         friction={2}
         overshootFriction={8}
         rightThreshold={40}
@@ -175,7 +195,7 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
           style={themed($touchableNeo)}
           onLongPress={() => handleDeleteOutline(outline.id, outline.title)}
         />
-      </Swipeable>
+      </ReanimatedSwipeable>
     </View>
   )
 

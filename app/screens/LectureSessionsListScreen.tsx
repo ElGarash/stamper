@@ -1,12 +1,18 @@
 import { FC, useCallback, useState } from "react"
-import { View, ViewStyle, FlatList, TouchableOpacity, Alert, Animated } from "react-native"
+import { View, ViewStyle, FlatList, TouchableOpacity, Alert } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 import {
   ClockArrowDown as LucideClockArrowDown,
   ClockArrowUp as LucideClockArrowUp,
 } from "lucide-react-native"
 import { Trash } from "lucide-react-native"
-import { Swipeable } from "react-native-gesture-handler"
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable"
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+  SharedValue,
+} from "react-native-reanimated"
 
 import { Header } from "@/components/Header"
 import { ListItem } from "@/components/ListItem"
@@ -18,6 +24,36 @@ import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
 type Props = AppStackScreenProps<"LectureSessionsList">
+
+const RightSwipeActions = ({
+  progress,
+  onPressDelete,
+  theme,
+}: {
+  progress: SharedValue<number>
+  onPressDelete: () => void
+  theme: any
+}) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP)
+    const translateXDelete = interpolate(progress.value, [0, 1], [60, 0], Extrapolation.CLAMP)
+
+    return {
+      opacity,
+      transform: [{ translateX: translateXDelete }],
+    }
+  })
+
+  return (
+    <View style={$swipeActionsContainer}>
+      <Animated.View style={[$deleteIcon, animatedStyle]}>
+        <TouchableOpacity onPress={onPressDelete}>
+          <Trash size={24} color={theme.colors.error} />
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  )
+}
 
 export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
   const { outlineId } = route.params
@@ -63,33 +99,13 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
   )
 
   const renderRightActions = useCallback(
-    (
-      sessionId: string,
-      dragX: Animated.AnimatedInterpolation<number>,
-      progress: Animated.AnimatedInterpolation<number>,
-    ) => {
-      const opacity = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-      })
-
-      const translateXDelete = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [60, 0],
-        extrapolate: "clamp",
-      })
-
+    (sessionId: string, progress: SharedValue<number>) => {
       return (
-        <View style={$swipeActionsContainer}>
-          <Animated.View
-            style={[$deleteIcon, { opacity, transform: [{ translateX: translateXDelete }] }]}
-          >
-            <TouchableOpacity onPress={() => handleDelete(sessionId)}>
-              <Trash size={24} color={theme.colors.error} />
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+        <RightSwipeActions
+          progress={progress}
+          onPressDelete={() => handleDelete(sessionId)}
+          theme={theme}
+        />
       )
     },
     [handleDelete, theme],
@@ -130,10 +146,8 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
             data={sessions}
             keyExtractor={(s) => s.id}
             renderItem={({ item }) => (
-              <Swipeable
-                renderRightActions={(progress, dragX) =>
-                  renderRightActions(item.id, dragX, progress)
-                }
+              <ReanimatedSwipeable
+                renderRightActions={(progress) => renderRightActions(item.id, progress)}
                 friction={2}
                 overshootFriction={8}
                 rightThreshold={40}
@@ -145,7 +159,7 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
                   bottomSeparator
                   RightComponent={<Text size="xs">{item.itemTimestamps.length} marks</Text>}
                 />
-              </Swipeable>
+              </ReanimatedSwipeable>
             )}
           />
         )}
