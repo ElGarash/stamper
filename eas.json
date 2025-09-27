@@ -28,11 +28,11 @@
       "ios": { "simulator": true },
       "android": { "buildType": "apk" }
     },
-    "preview:device": {
-      "extends": "preview",
-      "ios": { "simulator": false }
-    },
-    "production": {}
+    "production": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
   },
   "submit": {
     "production": {}

@@ -1,0 +1,34 @@
+Transform your academic experience with Stamper, the ultimate app for lecture note-taking and outline management.
+
+📚 KEY FEATURES:
+
+✓ Create and manage detailed lecture outlines
+✓ Record lecture sessions with precise timestamps
+✓ Import content from Markdown files seamlessly
+✓ Organize notes by sessions and topics
+✓ Clean, distraction-free academic interface
+✓ Offline-first design for reliable access
+
+🎯 PERFECT FOR:
+
+• Students attending lectures and seminars
+• Educators preparing course materials
+• Researchers organizing academic content
+• Anyone who values structured note-taking
+
+🚀 BUILT FOR ACADEMICS:
+
+Stamper understands the academic workflow. Whether you're capturing key points during a lecture, structuring complex topics into clear outlines, or importing research materials, Stamper provides the tools you need to stay organized and focused.
+
+The app features a modern, intuitive interface built with React Native and Expo, ensuring smooth performance across devices while maintaining the academic focus that serious students and educators require.
+
+📱 FEATURES INCLUDE:
+
+• Hierarchical outline creation and editing
+• Session-based lecture recording and playback
+• Markdown import for existing content integration
+• Topic-based organization system
+• Timestamp navigation for recorded sessions
+• Export capabilities for sharing and backup
+
+Start organizing your academic life today with Stamper - where structure meets simplicity in note-taking excellence.
