@@ -118,7 +118,7 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
   )
 
   return (
-    <Screen preset="fixed">
+    <Screen preset="fixed" safeAreaEdges={["top", "bottom"]}>
       <Header title="Recorded Sessions" leftIcon="back" onLeftPress={() => navigation.goBack()} />
       {/* Row directly beneath the title containing only the sort icon aligned to the right */}
       <View style={$sortRow}>

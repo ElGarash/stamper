@@ -131,7 +131,12 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
   )
 
   return (
-    <Screen style={$root} preset="fixed" contentContainerStyle={$screenContentInner}>
+    <Screen
+      style={$root}
+      preset="fixed"
+      contentContainerStyle={$screenContentInner}
+      safeAreaEdges={["top", "bottom"]}
+    >
       <Header
         title="Recording Lecture"
         leftIcon="back"

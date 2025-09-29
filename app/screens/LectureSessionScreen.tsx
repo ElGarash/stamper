@@ -113,7 +113,7 @@ export const LectureSessionScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <Screen preset="fixed">
+    <Screen preset="fixed" safeAreaEdges={["top", "bottom"]}>
       <Header title="Session" leftIcon="back" onLeftPress={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.container}>
         {!session ? (

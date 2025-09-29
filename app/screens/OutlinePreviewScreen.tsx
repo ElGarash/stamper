@@ -96,7 +96,7 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
 
   if (loading) {
     return (
-      <Screen style={$root} preset="scroll">
+      <Screen style={$root} preset="scroll" safeAreaEdges={["top", "bottom"]}>
         <Header
           title="Loading..."
           leftIcon="back"
@@ -112,7 +112,7 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
 
   if (error || !outline) {
     return (
-      <Screen style={$root} preset="scroll">
+      <Screen style={$root} preset="scroll" safeAreaEdges={["top", "bottom"]}>
         <Header
           title="Error"
           leftIcon="back"
@@ -132,7 +132,7 @@ export const OutlinePreviewScreen: FC<OutlinePreviewScreenProps> = (props) => {
   }
 
   return (
-    <Screen style={$root} preset="scroll">
+    <Screen style={$root} preset="scroll" safeAreaEdges={["top", "bottom"]}>
       <Header
         title={outline.title}
         leftIcon="back"

@@ -211,7 +211,11 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
 
   if (isLoading) {
     return (
-      <Screen preset="fixed" contentContainerStyle={themed($screenContainer)}>
+      <Screen
+        preset="fixed"
+        contentContainerStyle={themed($screenContainer)}
+        safeAreaEdges={["top", "bottom"]}
+      >
         <Header title="Outlines" />
         <View style={themed($loadingContainer)}>
           <Text>Loading outlines...</Text>
@@ -221,7 +225,11 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
   }
 
   return (
-    <Screen preset="fixed" contentContainerStyle={themed($screenContainer)}>
+    <Screen
+      preset="fixed"
+      contentContainerStyle={themed($screenContainer)}
+      safeAreaEdges={["top", "bottom"]}
+    >
       <Header title="Outlines" />
 
       <View style={themed($contentContainer)}>
