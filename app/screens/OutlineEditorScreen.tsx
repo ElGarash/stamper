@@ -14,6 +14,108 @@ import { getOutlineById, updateOutline } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
+const OutlineEditorHeader: FC<{
+  title: string
+  onChangeTitle: (t: string) => void
+  onSave?: () => void
+  onLeftPress?: () => void
+  rightText?: string | undefined
+  onRightPress?: () => void
+}> = ({ title, onChangeTitle, onSave, onLeftPress, rightText, onRightPress }) => {
+  const { themed } = useAppTheme()
+
+  return (
+    <View>
+      <Header
+        title="Edit Outline"
+        leftIcon="back"
+        onLeftPress={onLeftPress}
+        rightText={rightText}
+        onRightPress={onRightPress}
+      />
+      <View style={themed($headerComponent)}>
+        <Text preset="subheading" text="Title" style={themed($sectionLabel)} />
+        <TextField
+          value={title}
+          onChangeText={onChangeTitle}
+          returnKeyType="done"
+          onSubmitEditing={onSave}
+          placeholder="Outline title"
+          inputWrapperStyle={themed($inputWrapper)}
+          style={themed($titleInput)}
+        />
+        <Text preset="subheading" text="Topics" style={themed($sectionLabel)} />
+      </View>
+    </View>
+  )
+}
+
+const OutlineEditorFooter: FC<{
+  isAdding: boolean
+  setIsAdding: (v: boolean) => void
+  addInputRef: React.MutableRefObject<any>
+  newItemTitle: string
+  setNewItemTitle: (t: string) => void
+  itemsLength: number
+  addNewItem: () => void
+  themed: (s: any) => any
+}> = ({
+  isAdding,
+  setIsAdding,
+  addInputRef,
+  newItemTitle,
+  setNewItemTitle,
+  itemsLength,
+  addNewItem,
+  themed,
+}) => {
+  if (!isAdding) {
+    return (
+      <TouchableOpacity
+        accessibilityRole="button"
+        onPress={() => setIsAdding(true)}
+        style={themed([$row, $addRow])}
+      >
+        <View style={themed($handle)}>
+          <Plus size={20} />
+        </View>
+        <Text style={themed($addText)}>{(itemsLength + 1).toString()}. Add item</Text>
+      </TouchableOpacity>
+    )
+  }
+
+  return (
+    <View style={themed([$row, $addRow])}>
+      <View style={themed($handle)}>
+        <Plus size={20} />
+      </View>
+      {/** Use native TextInput to avoid gesture conflicts */}
+      {(() => {
+        const RNTextInput = require("react-native")
+          .TextInput as typeof import("react-native").TextInput
+        return (
+          <RNTextInput
+            ref={addInputRef}
+            value={newItemTitle}
+            autoFocus
+            onChangeText={setNewItemTitle}
+            placeholder="New item title"
+            returnKeyType="done"
+            onSubmitEditing={addNewItem}
+            blurOnSubmit={false}
+            autoCorrect={false}
+            autoCapitalize="none"
+            onBlur={() => {
+              if (!newItemTitle.trim()) setIsAdding(false)
+            }}
+            style={themed($rowNativeInput)}
+          />
+        )
+      })()}
+    </View>
+  )
+}
+
 interface OutlineEditorScreenProps extends AppStackScreenProps<"OutlineEditor"> {}
 
 export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
@@ -176,164 +278,119 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
 
   return (
     <Screen preset="fixed" contentContainerStyle={themed($container)}>
-      <Header
-        title="Edit Outline"
-        leftIcon="back"
-        onLeftPress={handleBack}
-        rightText={isDirty ? "Save" : undefined}
-        onRightPress={isDirty ? handleSave : undefined}
-      />
-
-      <View style={themed($content)}>
-        <Text preset="subheading" text="Title" style={themed($sectionLabel)} />
-        <TextField
-          value={title}
-          onChangeText={(t) => {
-            setTitle(t)
-          }}
-          autoFocus
-          returnKeyType="done"
-          onSubmitEditing={handleSave}
-          placeholder="Outline title"
-          inputWrapperStyle={themed($inputWrapper)}
-          style={themed($titleInput)}
-        />
-
-        <View style={themed($itemsSection)}>
-          <Text preset="subheading" text="Topics" style={themed($sectionLabel)} />
-          <DraggableFlatList
-            data={items}
-            keyExtractor={(item) => item.id}
-            onDragEnd={({ data }) => {
-              setItems(data)
-              setDirty(true)
-            }}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="on-drag"
-            activationDistance={12}
-            containerStyle={themed($listContainer)}
-            contentContainerStyle={themed($listContent)}
-            scrollEnabled={!isAdding}
-            dragItemOverflow={false}
-            extraData={{ editingItemId, editingTitle }}
-            renderItem={({ item, drag, isActive, getIndex }) => {
-              const indexLabel = typeof getIndex === "function" ? `${(getIndex() ?? 0) + 1}. ` : ""
-              const isEditing = editingItemId === item.id
-              return (
-                <ScaleDecorator activeScale={1.01}>
-                  <ReanimatedSwipeable
-                    overshootRight={false}
-                    renderRightActions={() => (
-                      <View style={themed($swipeActionsContainer)}>
-                        <TouchableOpacity
-                          style={themed($deleteIcon)}
-                          onPress={() => deleteItem(item.id)}
-                        >
-                          <Trash size={22} color="#ff3b30" />
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  >
-                    <View style={[themed($row), isActive ? themed($rowActive) : null]}>
-                      <TouchableOpacity
-                        onLongPress={isEditing ? undefined : drag}
-                        disabled={isActive || isEditing}
-                        style={themed($handle)}
-                      >
-                        <GripVertical size={20} />
-                      </TouchableOpacity>
-                      {isEditing ? (
-                        (() => {
-                          const RNTextInput = require("react-native")
-                            .TextInput as typeof import("react-native").TextInput
-                          return (
-                            <RNTextInput
-                              value={editingTitle}
-                              onChangeText={setEditingTitle}
-                              autoFocus
-                              placeholder="Edit item title"
-                              returnKeyType="done"
-                              onSubmitEditing={commitEditItem}
-                              onBlur={cancelEditItem}
-                              style={themed($rowNativeInput)}
-                            />
-                          )
-                        })()
-                      ) : (
-                        <TouchableOpacity
-                          style={themed($rowTextPressable)}
-                          delayLongPress={200}
-                          onLongPress={() => startEditItem(item.id)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={themed($rowText)} numberOfLines={2}>
-                            {indexLabel}
-                            {item.title}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </ReanimatedSwipeable>
-                </ScaleDecorator>
-              )
-            }}
+      <DraggableFlatList
+        data={items}
+        keyExtractor={(item) => item.id}
+        onDragEnd={({ data }) => {
+          setItems(data)
+          setDirty(true)
+        }}
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="on-drag"
+        activationDistance={12}
+        contentContainerStyle={themed($listContent)}
+        scrollEnabled={!isAdding}
+        dragItemOverflow={false}
+        extraData={{ editingItemId, editingTitle }}
+        ListHeaderComponent={
+          <OutlineEditorHeader
+            title={title}
+            onChangeTitle={setTitle}
+            onSave={handleSave}
+            onLeftPress={handleBack}
+            rightText={isDirty ? "Save" : undefined}
+            onRightPress={isDirty ? handleSave : undefined}
           />
-
-          {/* Add Item Row placed below list for better input behavior */}
-          {!isAdding ? (
-            <TouchableOpacity
-              accessibilityRole="button"
-              onPress={() => setIsAdding(true)}
-              style={themed([$row, $addRow])}
-            >
-              <View style={themed($handle)}>
-                <Plus size={20} />
-              </View>
-              <Text style={themed($addText)}>{(items.length + 1).toString()}. Add item</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={themed([$row, $addRow])}>
-              <View style={themed($handle)}>
-                <Plus size={20} />
-              </View>
-              {/** Use native TextInput to avoid gesture conflicts */}
-              {(() => {
-                const RNTextInput = require("react-native")
-                  .TextInput as typeof import("react-native").TextInput
-                return (
-                  <RNTextInput
-                    ref={addInputRef}
-                    value={newItemTitle}
-                    onChangeText={setNewItemTitle}
-                    placeholder="New item title"
-                    autoFocus
-                    returnKeyType="done"
-                    onSubmitEditing={addNewItem}
-                    blurOnSubmit={false}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                    onBlur={() => {
-                      if (!newItemTitle.trim()) setIsAdding(false)
-                    }}
-                    style={themed($rowNativeInput)}
-                  />
-                )
-              })()}
-            </View>
-          )}
-        </View>
-      </View>
+        }
+        renderItem={({ item, drag, isActive, getIndex }) => {
+          const indexLabel = typeof getIndex === "function" ? `${(getIndex() ?? 0) + 1}. ` : ""
+          const isEditing = editingItemId === item.id
+          return (
+            <ScaleDecorator activeScale={1.01}>
+              <ReanimatedSwipeable
+                overshootRight={false}
+                renderRightActions={() => (
+                  <View style={themed($swipeActionsContainer)}>
+                    <TouchableOpacity
+                      style={themed($deleteIcon)}
+                      onPress={() => deleteItem(item.id)}
+                    >
+                      <Trash size={22} color="#ff3b30" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              >
+                <View style={[themed($row), isActive ? themed($rowActive) : null]}>
+                  <TouchableOpacity
+                    onLongPress={isEditing ? undefined : drag}
+                    disabled={isActive || isEditing}
+                    style={themed($handle)}
+                  >
+                    <GripVertical size={20} />
+                  </TouchableOpacity>
+                  {isEditing ? (
+                    (() => {
+                      const RNTextInput = require("react-native")
+                        .TextInput as typeof import("react-native").TextInput
+                      return (
+                        <RNTextInput
+                          value={editingTitle}
+                          onChangeText={setEditingTitle}
+                          autoFocus
+                          placeholder="Edit item title"
+                          returnKeyType="done"
+                          onSubmitEditing={commitEditItem}
+                          onBlur={cancelEditItem}
+                          style={themed($rowNativeInput)}
+                        />
+                      )
+                    })()
+                  ) : (
+                    <TouchableOpacity
+                      style={themed($rowTextPressable)}
+                      delayLongPress={200}
+                      onLongPress={() => startEditItem(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={themed($rowText)} numberOfLines={2}>
+                        {indexLabel}
+                        {item.title}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </ReanimatedSwipeable>
+            </ScaleDecorator>
+          )
+        }}
+        ListFooterComponent={
+          <OutlineEditorFooter
+            isAdding={isAdding}
+            setIsAdding={setIsAdding}
+            addInputRef={addInputRef}
+            newItemTitle={newItemTitle}
+            setNewItemTitle={setNewItemTitle}
+            itemsLength={items.length}
+            addNewItem={addNewItem}
+            themed={themed}
+          />
+        }
+      />
     </Screen>
   )
 }
 
 const $container: ViewStyle = {
   flex: 1,
-  justifyContent: "flex-start",
 }
 
 const $content: ViewStyle = {
   padding: spacing.md,
+}
+
+const $headerComponent: ViewStyle = {
+  paddingHorizontal: spacing.md,
+  paddingTop: spacing.md,
 }
 
 const $sectionLabel: ViewStyle = {
@@ -348,16 +405,9 @@ const $titleInput: import("react-native").TextStyle = {
   fontSize: 20,
 }
 
-const $itemsSection: ViewStyle = {
-  marginTop: spacing.lg,
-}
-
-const $listContainer: ViewStyle = {
-  // let list size to content; editor screen is not scroll preset, so keep lightweight
-}
-
 const $listContent: ViewStyle = {
-  paddingBottom: 0,
+  paddingHorizontal: spacing.md,
+  paddingBottom: spacing.xxl,
 }
 
 const $row: ViewStyle = {
