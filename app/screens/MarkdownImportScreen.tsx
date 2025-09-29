@@ -289,7 +289,7 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
   }
 
   return (
-    <Screen preset="scroll" safeAreaEdges={["top"]}>
+    <Screen preset="scroll" safeAreaEdges={["top", "bottom"]}>
       <Header title="Import Markdown" leftIcon="back" onLeftPress={() => navigation.goBack()} />
       <View style={styles.container}>{renderContent()}</View>
     </Screen>

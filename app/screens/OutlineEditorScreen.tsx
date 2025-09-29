@@ -285,7 +285,11 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
 
   if (loading) {
     return (
-      <Screen preset="fixed" contentContainerStyle={themed($container)}>
+      <Screen
+        preset="fixed"
+        contentContainerStyle={themed($container)}
+        safeAreaEdges={["top", "bottom"]}
+      >
         <Header title="Editing" leftIcon="back" onLeftPress={handleBack} />
         <View style={themed($content)}>
           <Text>Loading...</Text>
@@ -296,7 +300,11 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
 
   if (!outline) {
     return (
-      <Screen preset="fixed" contentContainerStyle={themed($container)}>
+      <Screen
+        preset="fixed"
+        contentContainerStyle={themed($container)}
+        safeAreaEdges={["top", "bottom"]}
+      >
         <Header title="Not Found" leftIcon="back" onLeftPress={() => navigation.goBack()} />
         <View style={themed($content)}>
           <Text>Outline not found.</Text>
@@ -306,7 +314,11 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
   }
 
   return (
-    <Screen preset="fixed" contentContainerStyle={themed($container)}>
+    <Screen
+      preset="fixed"
+      contentContainerStyle={themed($container)}
+      safeAreaEdges={["top", "bottom"]}
+    >
       <DraggableFlatList
         data={items}
         keyExtractor={(item) => item.id}
