@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
-    "@expo/metro-runtime": "~5.0.4",
+    "@expo/metro-runtime": "~5.0.5",
     "@notionhq/client": "^5.1.0",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-documents/picker": "^10.1.7",
@@ -38,7 +38,7 @@
     "@react-navigation/native-stack": "^7.2.0",
     "apisauce": "3.1.1",
     "date-fns": "^4.1.0",
-    "expo": "^53.0.15",
+    "expo": "~53.0.23",
     "expo-dev-client": "~5.2.1",
     "expo-font": "~13.3.0",
     "expo-localization": "~16.1.5",
@@ -57,8 +57,8 @@
     "react-native-mmkv": "^3.2.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
-    "react-native-svg": "^15.13.0",
-    "react-native-screens": "~4.11.1"
+    "react-native-screens": "~4.11.1",
+    "react-native-svg": "15.11.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
