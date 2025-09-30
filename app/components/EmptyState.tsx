@@ -7,7 +7,7 @@ import type { ThemedStyle } from "@/theme/types"
 import { Button, ButtonProps } from "./Button"
 import { Text, TextProps } from "./Text"
 
-const sadFace = require("@assets/images/sad-face.png")
+const sadFace = require("@assets/images/logo.png")
 
 interface EmptyStateProps {
   /**

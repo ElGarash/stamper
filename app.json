@@ -12,13 +12,13 @@
   "newArchEnabled": true,
   "jsEngine": "hermes",
   "assetBundlePatterns": [
-    "**/*"
-  ],
+"**/*"
+],
   "android": {
     "icon": "./assets/images/logo.png",
     "package": "com.stamper",
     "adaptiveIcon": {
-      "foregroundImage": "./assets/images/logo-without-background.png",
+      "foregroundImage": "./assets/images/logo.png",
       "backgroundColor": "#191015"
     },
     "allowBackup": false,
@@ -39,7 +39,7 @@
     [
       "expo-splash-screen",
       {
-        "image": "./assets/images/logo.png",
+        "image": "./assets/images/splash.png",
         "imageWidth": 300,
         "resizeMode": "contain",
         "backgroundColor": "#191015"
