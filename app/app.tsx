@@ -15,7 +15,6 @@ import "./utils/gestureHandler"
 
 import { useEffect, useState } from "react"
 import { useFonts } from "expo-font"
-import * as Linking from "expo-linking"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
@@ -29,27 +28,6 @@ import { loadDateFnsLocale } from "./utils/formatDate"
 import * as storage from "./utils/storage"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
-
-// Web linking configuration
-const prefix = Linking.createURL("/")
-const config = {
-  screens: {
-    Login: {
-      path: "",
-    },
-    Welcome: "welcome",
-    Demo: {
-      screens: {
-        DemoShowroom: {
-          path: "showroom/:queryIndex?/:itemIndex?",
-        },
-        DemoDebug: "debug",
-        DemoPodcastList: "podcast",
-        DemoCommunity: "community",
-      },
-    },
-  },
-}
 
 /**
  * This is the root component of our app.
@@ -82,11 +60,6 @@ export function App() {
     return null
   }
 
-  const linking = {
-    prefixes: [prefix],
-    config,
-  }
-
   // otherwise, we're ready to render the app
   return (
     <GestureHandlerRootView style={$gestureRootView}>
@@ -94,7 +67,6 @@ export function App() {
         <KeyboardProvider>
           <ThemeProvider>
             <AppNavigator
-              linking={linking}
               initialState={initialNavigationState}
               onStateChange={onNavigationStateChange}
             />
