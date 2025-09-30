@@ -24,13 +24,26 @@ function formatDuration(ms: number) {
 }
 
 function formatYouTubeTimestamps(session: any, outlineItemsMap: Record<string, string> = {}) {
-  // Output lines like: 00:01 Topic title
-  return session.itemTimestamps
-    .map((t: any) => {
-      const ts = formatDuration(
-        t.timestamp - session.startedAt - (computePausedBefore(session, t.timestamp) || 0),
-      )
-      const title = outlineItemsMap[t.itemId] || "Item"
+  // A tap logs the END of a topic segment. YouTube timestamps expect START times.
+  // We therefore shift each recorded mark back to the previous mark (or session start for the first item).
+  // Example: marks = [Topic A @ 00:05, Topic B @ 00:12, Topic C @ 00:20]
+  // Output:
+  // 00:00 Topic A (started at session start)
+  // 00:05 Topic B (started at end of A)
+  // 00:12 Topic C (started at end of B)
+  // Note: The final mark's own timestamp is NOT shown; it's the boundary after that topic.
+  if (!session?.itemTimestamps || session.itemTimestamps.length === 0) return ""
+
+  const sorted = [...session.itemTimestamps].sort((a, b) => a.timestamp - b.timestamp)
+
+  return sorted
+    .map((entry, index) => {
+      // Start boundary for this topic is previous mark or session start
+      const startBoundary = index === 0 ? session.startedAt : sorted[index - 1].timestamp
+      const pausedBefore = computePausedBefore(session, startBoundary) || 0
+      const relativeMs = startBoundary - session.startedAt - pausedBefore
+      const ts = formatDuration(relativeMs)
+      const title = outlineItemsMap[entry.itemId] || "Item"
       return `${ts} ${title}`
     })
     .join("\n")
