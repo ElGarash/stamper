@@ -42,6 +42,18 @@ Builds:
       npm ci
       npx expo prebuild --clean --platform android
       cd android
+  - versionName: '0.2.0'
+    versionCode: 2
+    commit: main
+    subdir: android
+    gradle:
+      - fdroid
+    build: |
+      export SOURCE_DATE_EPOCH=1640995200
+      cd ..
+      npm ci
+      npx expo prebuild --clean --platform android
+      cd android
 
 # Disable automatic updates for F-Droid compatibility
 UpdateCheckMode: Tags
