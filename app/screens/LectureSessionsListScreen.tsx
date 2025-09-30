@@ -1,5 +1,5 @@
 import { FC, useCallback, useState } from "react"
-import { View, ViewStyle, FlatList, TouchableOpacity, Alert } from "react-native"
+import { View, ViewStyle, FlatList, TouchableOpacity, Alert, TextStyle } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 import {
   ClockArrowDown as LucideClockArrowDown,
@@ -19,7 +19,12 @@ import { ListItem } from "@/components/ListItem"
 import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
-import { getSessionsForOutline, deleteLectureSession } from "@/services/lectureSessionStorage"
+import {
+  getSessionsForOutline,
+  deleteLectureSession,
+  loadPausedLectureState,
+} from "@/services/lectureSessionStorage"
+import { getOutlineById } from "@/services/outlineStorage"
 import { useAppTheme } from "@/theme/context"
 import { spacing } from "@/theme/spacing"
 
@@ -60,6 +65,12 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
   const [sessions, setSessions] = useState<any[]>([])
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
   const { theme } = useAppTheme()
+
+  const pausedSnapshot = loadPausedLectureState()
+  const showResume =
+    pausedSnapshot &&
+    pausedSnapshot.session.outlineId === outlineId &&
+    !pausedSnapshot.session.completedAt
 
   const load = useCallback(() => {
     const allSessions = getSessionsForOutline(outlineId)
@@ -139,6 +150,26 @@ export const LectureSessionsListScreen: FC<Props> = ({ route, navigation }) => {
       </View>
 
       <View style={$content}>
+        {showResume && (
+          <View style={$resumeBanner}>
+            <Text preset="bold">Paused recording in progress</Text>
+            <Text size="xs">
+              Started at {new Date(pausedSnapshot!.session.startedAt).toLocaleTimeString()}
+            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() =>
+                navigation.navigate("LectureRecording", {
+                  outline: getOutlineById(outlineId) || { id: outlineId, title: "", items: [] },
+                })
+              }
+              style={$resumeButton}
+            >
+              <Text style={$resumeButtonText}>Resume</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {sessions.length === 0 ? (
           <Text>No recorded sessions for this outline.</Text>
         ) : (
@@ -195,4 +226,29 @@ const $deleteIcon: ViewStyle = {
   justifyContent: "center",
   alignItems: "center",
   marginBottom: spacing.xs,
+}
+
+const $resumeBanner: ViewStyle = {
+  padding: spacing.md,
+  backgroundColor: "#FFF7ED",
+  borderWidth: 2,
+  borderColor: "#FF7A00",
+  borderRadius: 12,
+  marginBottom: spacing.md,
+}
+
+const $resumeButton: ViewStyle = {
+  marginTop: spacing.sm,
+  alignSelf: "flex-start",
+  backgroundColor: "#FF7A00",
+  paddingVertical: spacing.xs,
+  paddingHorizontal: spacing.md,
+  borderRadius: 8,
+  borderWidth: 2,
+  borderColor: "#162033",
+}
+
+const $resumeButtonText: TextStyle = {
+  color: "#FFFFFF",
+  fontWeight: "600",
 }

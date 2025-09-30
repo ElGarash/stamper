@@ -8,7 +8,9 @@ import { Header } from "@/components/Header"
 import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
+import { loadPausedLectureState } from "@/services/lectureSessionStorage"
 import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
+import { getOutlineById } from "@/services/outlineStorage"
 import { spacing } from "@/theme/spacing"
 
 interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> {}
@@ -27,6 +29,23 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
       setTimerState(state)
     })
 
+    // Hydrate checked items immediately if there's an existing (paused) session
+    if (checkedItems.size === 0) {
+      const existingSession = lectureTimerService.getCurrentSession?.()
+      if (existingSession) {
+        let covered =
+          lectureTimerService.getCoveredItemIds?.() ||
+          lectureTimerService.getCheckedItemIds?.() ||
+          []
+        if (covered.length === 0 && existingSession.itemTimestamps?.length) {
+          covered = existingSession.itemTimestamps.map((t: any) => t.itemId)
+        }
+        if (covered.length > 0) {
+          setCheckedItems(new Set(covered))
+        }
+      }
+    }
+
     // Update elapsed time every 100ms
     const interval = setInterval(() => {
       setElapsedTime(lectureTimerService.getElapsedTime())
@@ -35,6 +54,33 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
     return () => {
       unsubscribe()
       clearInterval(interval)
+    }
+    // We intentionally only run this once on mount; checkedItems hydration is idempotent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Attempt to restore paused session once on mount if none active
+  useEffect(() => {
+    const snapshot = loadPausedLectureState?.()
+    const noSession = !lectureTimerService.getCurrentSession?.()
+    const needRestore = noSession && snapshot
+    if (needRestore) {
+      const restored = lectureTimerService.restorePausedLecture?.()
+      if (restored) {
+        const ids = lectureTimerService.getCheckedItemIds?.() || []
+        // Fallback: if service returns empty but session has timestamps, rebuild
+        if (ids.length === 0) {
+          const session = lectureTimerService.getCurrentSession?.()
+          if (session) {
+            const rebuilt = session.itemTimestamps.map((t) => t.itemId)
+            if (rebuilt.length > 0) {
+              setCheckedItems(new Set(rebuilt))
+            }
+          }
+        } else {
+          setCheckedItems(new Set(ids))
+        }
+      }
     }
   }, [])
 
@@ -129,6 +175,19 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
     },
     [checkedItems, handleToggleItem],
   )
+
+  // Fallback to load outline items if items array is empty (resume flow)
+  useEffect(() => {
+    if (outline && outline.items.length === 0) {
+      const loaded = getOutlineById(outline.id)
+      if (loaded && loaded.items.length > 0) {
+        // mutate route params outline reference items so FlatList updates
+        // (route params object is stable, but items ref replaced)
+        // @ts-ignore
+        route.params.outline.items = loaded.items
+      }
+    }
+  }, [outline, route.params])
 
   return (
     <Screen style={$root} preset="fixed" contentContainerStyle={$screenContentInner}>
