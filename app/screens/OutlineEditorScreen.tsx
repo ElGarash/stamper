@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Alert, View, ViewStyle, TextStyle, TouchableOpacity } from "react-native"
-import { GripVertical, Plus, Trash } from "lucide-react-native"
+import { GripVertical, Plus, Trash, ChevronRight, ChevronLeft } from "lucide-react-native"
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist"
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable"
 
@@ -254,6 +254,35 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
     [items, editingItemId, cancelEditItem],
   )
 
+  const nestItem = useCallback((itemId: string) => {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === itemId) {
+          // Add 2 spaces to increase nesting level
+          return { ...item, title: "  " + item.title }
+        }
+        return item
+      }),
+    )
+    setDirty(true)
+  }, [])
+
+  const unnestItem = useCallback((itemId: string) => {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === itemId) {
+          // Remove up to 2 leading spaces to decrease nesting level
+          const match = item.title.match(/^( {1,2})(.*)$/)
+          if (match) {
+            return { ...item, title: match[2] }
+          }
+        }
+        return item
+      }),
+    )
+    setDirty(true)
+  }, [])
+
   if (loading) {
     return (
       <Screen preset="fixed" contentContainerStyle={themed($container)}>
@@ -305,12 +334,30 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
         renderItem={({ item, drag, isActive, getIndex }) => {
           const indexLabel = typeof getIndex === "function" ? `${(getIndex() ?? 0) + 1}. ` : ""
           const isEditing = editingItemId === item.id
+
+          // Detect leading spaces (added during markdown flattening to encode nesting) and compute level
+          const leadingSpaceMatch = item.title.match(/^( +)/)
+          const leadingSpaces = leadingSpaceMatch ? leadingSpaceMatch[1].length : 0
+          const level = Math.floor(leadingSpaces / 2)
+          const displayTitle = leadingSpaces > 0 ? item.title.slice(leadingSpaces) : item.title
+          const indentStyle: ViewStyle = level > 0 ? { marginLeft: level * 18 } : {}
+
           return (
             <ScaleDecorator activeScale={1.01}>
               <ReanimatedSwipeable
                 overshootRight={false}
                 renderRightActions={() => (
                   <View style={themed($swipeActionsContainer)}>
+                    <TouchableOpacity
+                      style={themed($nestIcon)}
+                      onPress={() => unnestItem(item.id)}
+                      disabled={level === 0}
+                    >
+                      <ChevronLeft size={22} color={level === 0 ? "#999" : "#007AFF"} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={themed($nestIcon)} onPress={() => nestItem(item.id)}>
+                      <ChevronRight size={22} color="#007AFF" />
+                    </TouchableOpacity>
                     <TouchableOpacity
                       style={themed($deleteIcon)}
                       onPress={() => deleteItem(item.id)}
@@ -320,7 +367,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
                   </View>
                 )}
               >
-                <View style={[themed($row), isActive ? themed($rowActive) : null]}>
+                <View style={[themed($row), isActive ? themed($rowActive) : null, indentStyle]}>
                   <TouchableOpacity
                     onLongPress={isEditing ? undefined : drag}
                     disabled={isActive || isEditing}
@@ -354,7 +401,7 @@ export const OutlineEditorScreen: FC<OutlineEditorScreenProps> = (props) => {
                     >
                       <Text style={themed($rowText)} numberOfLines={2}>
                         {indexLabel}
-                        {item.title}
+                        {displayTitle}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -475,6 +522,13 @@ const $swipeActionsContainer: ViewStyle = {
 
 const $deleteIcon: ViewStyle = {
   minWidth: 64,
+  minHeight: 48,
+  justifyContent: "center",
+  alignItems: "center",
+}
+
+const $nestIcon: ViewStyle = {
+  minWidth: 48,
   minHeight: 48,
   justifyContent: "center",
   alignItems: "center",
