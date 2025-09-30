@@ -17,8 +17,10 @@ module.exports = ({ config }: ConfigContext): Partial<ExpoConfig> => {
 
   return {
     ...config,
+    version: "0.2.0",
     ios: {
       ...config.ios,
+      buildNumber: "2",
       // This privacyManifests is to get you started.
       // See Expo's guide on apple privacy manifests here:
       // https://docs.expo.dev/guides/apple-privacy/
@@ -33,6 +35,10 @@ module.exports = ({ config }: ConfigContext): Partial<ExpoConfig> => {
           },
         ],
       },
+    },
+    android: {
+      ...config.android,
+      versionCode: 2,
     },
     plugins: [...existingPlugins, require("./plugins/withSplashScreen").withSplashScreen],
   }
