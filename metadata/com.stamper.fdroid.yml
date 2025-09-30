@@ -4,14 +4,14 @@ Categories:
 
 License: MIT
 
-AuthorName: Stamper Team
-AuthorEmail: contact@stamper.app
-AuthorWebSite: https://stamper.app
+AuthorName: ElGarash
+AuthorEmail: research@abdulrhmnghanem.tech
+AuthorWebSite: https://blog.abdulrhmnghanem.tech/
 
 Summary: Academic lecture note-taking and outline management app
 
 Description: |
-  Stamper is a React Native app designed for academic note-taking and lecture management.
+  Stamper is a React Native app designed for academic note-taking and lecture management, A micro app that helps with post-processing of learners' recordings. It outputs a ffmpeg command that removes the pauses and YouTube compatible timestamps.
 
   Key features:
   * Create and manage lecture outlines
@@ -24,16 +24,16 @@ Description: |
   and educators to structure their academic content effectively.
 
 RepoType: git
-Repo: https://github.com/AbdulrhmnGhanem/stamper
-SourceCode: https://github.com/AbdulrhmnGhanem/stamper
+Repo: https://github.com/ElGarash/stamper
+SourceCode: https://github.com/ElGarash/stamper
 
 Builds:
-  - versionName: '1.0.0'
+  - versionName: '0.0.1'
     versionCode: 1
-    commit: main
+    commit: refs/tags/v0.0.1
     subdir: android
     gradle:
-      - fdroid
+      - assembleRelease
 
     # Ensure reproducible builds
     build: |
