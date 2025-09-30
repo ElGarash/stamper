@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "orientation": "portrait",
   "userInterfaceStyle": "automatic",
-  "icon": "./assets/images/app-icon-all.png",
+  "icon": "./assets/images/logo.png",
   "updates": {
     "fallbackToCacheTimeout": 0
   },
@@ -15,22 +15,22 @@
     "**/*"
   ],
   "android": {
-    "icon": "./assets/images/app-icon-android-legacy.png",
+    "icon": "./assets/images/logo.png",
     "package": "com.stamper",
     "adaptiveIcon": {
-      "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
-      "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
+      "foregroundImage": "./assets/images/logo-without-background.png",
+      "backgroundColor": "#191015"
     },
     "allowBackup": false,
     "edgeToEdgeEnabled": true
   },
   "ios": {
-    "icon": "./assets/images/app-icon-ios.png",
+    "icon": "./assets/images/logo.png",
     "supportsTablet": true,
     "bundleIdentifier": "com.stamper"
   },
   "web": {
-    "favicon": "./assets/images/app-icon-web-favicon.png",
+    "favicon": "./assets/images/logo.png",
     "bundler": "metro"
   },
   "plugins": [
@@ -39,7 +39,7 @@
     [
       "expo-splash-screen",
       {
-        "image": "./assets/images/app-icon-android-adaptive-foreground.png",
+        "image": "./assets/images/logo.png",
         "imageWidth": 300,
         "resizeMode": "contain",
         "backgroundColor": "#191015"

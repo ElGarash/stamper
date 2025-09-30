@@ -1,17 +1,13 @@
 import { useEffect, useRef, useCallback } from "react"
-import { Image, ImageStyle, Animated, StyleProp, View, ViewStyle } from "react-native"
+import { Animated, StyleProp, View, ViewStyle } from "react-native"
 
+import { Icon, IconTypes } from "@/components/Icon"
 import { useAppTheme } from "@/theme/context"
 import { $styles } from "@/theme/styles"
 
-import { iconRegistry, IconTypes } from "../Icon"
 import { $inputOuterBase, BaseToggleInputProps, ToggleProps, Toggle } from "./Toggle"
 
 export interface CheckboxToggleProps extends Omit<ToggleProps<CheckboxInputProps>, "ToggleInput"> {
-  /**
-   * Optional style prop that affects the Image component.
-   */
-  inputDetailStyle?: ImageStyle
   /**
    * Checkbox-only prop that changes the icon used for the "on" state.
    */
@@ -43,7 +39,6 @@ function CheckboxInput(props: CheckboxInputProps) {
     icon = "check",
     outerStyle: $outerStyleOverride,
     innerStyle: $innerStyleOverride,
-    detailStyle: $detailStyleOverride,
   } = props
 
   const {
@@ -101,23 +96,22 @@ function CheckboxInput(props: CheckboxInputProps) {
           { opacity: opacity.current },
         ]}
       >
-        <Image
-          source={icon ? iconRegistry[icon] : iconRegistry.check}
-          style={[
-            $checkboxDetail,
-            !!iconTintColor && { tintColor: iconTintColor },
-            $detailStyleOverride as ImageStyle,
-          ]}
-        />
+        {on && (
+          <Icon
+            icon={icon}
+            size={20}
+            color={iconTintColor as string}
+            style={$checkboxDetail as any}
+          />
+        )}
       </Animated.View>
     </View>
   )
 }
 
-const $checkboxDetail: ImageStyle = {
+const $checkboxDetail: ViewStyle = {
   width: 20,
   height: 20,
-  resizeMode: "contain",
 }
 
 const $inputOuter: StyleProp<ViewStyle> = [$inputOuterBase, { borderRadius: 4 }]
