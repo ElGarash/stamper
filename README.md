@@ -1,5 +1,17 @@
 # Stamper
 
-A micro app that helps with post-processing of learners' recordings. It outputs a `ffmpeg` command that removes the pauses and `YouTube` compatible timestamps.
+A micro app that helps with post-processing of lectures' recordings. It outputs a `ffmpeg` command that removes the pauses and `YouTube` compatible timestamps. The idea origninated from me forgetting to resume the recording after getting interrupted. So I just leave the recording running and the app generates a ffmpeg command that removes the pauses. It also saves me time by generating the `YouTube` chapters.
 
 ## Screenshots
+
+| Screen               | Preview                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Outlines List**    | [![Outlines List](assets/screenshots/outlines.png)](assets/screenshots/outlines.png)                    |
+| **Outline Editor**   | [![Outline Editor](assets/screenshots/outline_editor.png)](assets/screenshots/outline_editor.png)       |
+| **Outline Preview**  | [![Outline Preview](assets/screenshots/outline.png)](assets/screenshots/outline.png)                    |
+| **Lecture Sessions** | [![Lecture Sessions](assets/screenshots/sessions.png)](assets/screenshots/sessions.png)                 |
+| **Session Screen**   | [![Session Screen](assets/screenshots/session.png)](assets/screenshots/session.png)                     |
+| **Resume Session**   | [![Resume Session](assets/screenshots/resume_session.png)](assets/screenshots/resume_session.png)       |
+| **Recording**        | [![Recording](assets/screenshots/recording.png)](assets/screenshots/recording.png)                      |
+| **Paused Recording** | [![Paused Recording](assets/screenshots/paused_recording.png)](assets/screenshots/paused_recording.png) |
+| **Recorded Session** | [![Recorded Session](assets/screenshots/recorded_session.png)](assets/screenshots/recorded_session.png) |
