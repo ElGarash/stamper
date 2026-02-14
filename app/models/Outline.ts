@@ -2,7 +2,7 @@
 export interface Outline {
   id: string // UUID
   title: string
-  items: Array<{ id: string; title: string; coveredAt?: number }>
+  items: Array<{ id: string; title: string; notes?: string; coveredAt?: number }>
 }
 
 // Lecture session model

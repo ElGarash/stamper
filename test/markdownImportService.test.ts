@@ -98,6 +98,61 @@ describe("markdownImportService", () => {
       const nestedItem = result.outline!.items.find((item) => item.title.includes("Subtopic 1.1"))
       expect(nestedItem?.title).toBe("  Subtopic 1.1")
     })
+
+    it("should import per-item markdown notes", () => {
+      const content = `# Notes Import
+- Topic A
+  Notes for topic A.
+
+  \`\`\`js
+  console.log("A")
+  \`\`\`
+- Topic B
+  Notes for topic B.`
+
+      const result = importFromText(content)
+
+      expect(result.success).toBe(true)
+      const topicA = result.outline!.items.find((item) => item.title === "Topic A")
+      const topicB = result.outline!.items.find((item) => item.title === "Topic B")
+
+      expect(topicA?.notes).toContain("Notes for topic A.")
+      expect(topicA?.notes).toContain("```js")
+      expect(topicB?.notes).toBe("Notes for topic B.")
+    })
+
+    it("should treat nested non-checklist list blocks under checklist items as notes", () => {
+      const content = `- [ ] Predicates backtracking
+    We start by defining this
+
+    \`\`\`python
+    print("hello world")
+    \`\`\`
+
+    Then we move into:
+
+    - 1
+    - 2
+    - 3
+    - 5
+    -
+- [ ] Terms, variables, and values
+    - [ ] A term is a variable or a value`
+
+      const result = importFromText(content)
+
+      expect(result.success).toBe(true)
+      const firstItem = result.outline!.items.find(
+        (item) => item.title === "Predicates backtracking",
+      )
+      const nestedBullet = result.outline!.items.find((item) => item.title.includes("- 1"))
+
+      expect(firstItem?.notes).toContain("We start by defining this")
+      expect(firstItem?.notes).toContain("```python")
+      expect(firstItem?.notes).toContain("- 1")
+      expect(firstItem?.notes).toContain("- 5")
+      expect(nestedBullet).toBeUndefined()
+    })
   })
 
   describe("previewMarkdown", () => {

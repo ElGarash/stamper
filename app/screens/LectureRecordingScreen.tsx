@@ -1,7 +1,18 @@
 import { FC, useCallback, useEffect, useState } from "react"
-import { FlatList, View, ViewStyle, TextStyle, Alert, TouchableOpacity } from "react-native"
+import {
+  FlatList,
+  View,
+  ViewStyle,
+  TextStyle,
+  Alert,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native"
 import { TouchableWithoutFeedback } from "react-native"
 import { SquarePause, SquarePlay, SquareStop } from "lucide-react-native"
+import CodeHighlighter from "react-native-code-highlighter"
+import Markdown from "react-native-markdown-display"
+import atomOneDarkReasonable from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark-reasonable"
 
 import { Button } from "@/components/Button"
 import { Header } from "@/components/Header"
@@ -13,7 +24,39 @@ import { lectureTimerService, TimerState } from "@/services/lectureTimerService"
 import { getOutlineById } from "@/services/outlineStorage"
 import { spacing } from "@/theme/spacing"
 
-interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> {}
+interface LectureRecordingScreenProps extends AppStackScreenProps<"LectureRecording"> { }
+
+type OutlineItem = { id: string; title: string; notes?: string }
+
+const MarkdownCodeHighlighter = CodeHighlighter as any
+
+const markdownRules = {
+  fence: (node: any) => {
+    const language = (node?.info || "").trim().split(/\s+/)[0] || "plaintext"
+    const content = typeof node?.content === "string" ? node.content : ""
+    const key = node?.key || `fence_${language}_${content.slice(0, 24)}`
+
+    return (
+      <View key={key} style={$codeBlockWrapper}>
+        <MarkdownCodeHighlighter
+          hljsStyle={atomOneDarkReasonable}
+          containerStyle={$codeHighlighterContainer}
+          scrollViewProps={{ contentContainerStyle: $codeHighlighterContentContainer }}
+          textStyle={$codeBlockText}
+          language={language}
+        >
+          {content.replace(/\n$/, "")}
+        </MarkdownCodeHighlighter>
+      </View>
+    )
+  },
+}
+
+function getDisplayTitle(title: string): string {
+  const leadingSpaceMatch = title.match(/^( +)/)
+  const leadingSpaces = leadingSpaceMatch ? leadingSpaceMatch[1].length : 0
+  return leadingSpaces > 0 ? title.slice(leadingSpaces) : title
+}
 
 export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) => {
   const { route, navigation } = props
@@ -22,6 +65,8 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
   const [timerState, setTimerState] = useState<TimerState>(lectureTimerService.getTimerState())
   const [elapsedTime, setElapsedTime] = useState(0)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+  const [notesItemId, setNotesItemId] = useState<string | undefined>(outline.items[0]?.id)
+  const outlineItems: OutlineItem[] = outline.items
 
   // Update timer state and elapsed time
   useEffect(() => {
@@ -106,8 +151,12 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
       newCheckedItems.add(itemId)
       lectureTimerService.logItemCovered(itemId)
       setCheckedItems(newCheckedItems)
+
+      const checkedItemIndex = outlineItems.findIndex((item) => item.id === itemId)
+      const nextItem = checkedItemIndex >= 0 ? outlineItems[checkedItemIndex + 1] : undefined
+      setNotesItemId(nextItem?.id)
     },
-    [checkedItems],
+    [checkedItems, outlineItems],
   )
 
   const handlePauseResume = useCallback(() => {
@@ -137,7 +186,7 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
   }, [navigation])
 
   const renderOutlineItem = useCallback(
-    ({ item, index }: { item: { id: string; title: string }; index: number }) => {
+    ({ item, index }: { item: OutlineItem; index: number }) => {
       const isChecked = checkedItems.has(item.id)
 
       // Determine nesting level from leading spaces (each 2 spaces = 1 level) added during markdown flattening
@@ -145,7 +194,7 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
       const leadingSpaceMatch = item.title.match(/^( +)/)
       const leadingSpaces = leadingSpaceMatch ? leadingSpaceMatch[1].length : 0
       const level = Math.floor(leadingSpaces / 2)
-      const displayTitle = leadingSpaces > 0 ? item.title.slice(leadingSpaces) : item.title
+      const displayTitle = getDisplayTitle(item.title)
 
       // Indent the entire card instead of showing spaces inside the text
       const indentStyle: ViewStyle = level > 0 ? { marginLeft: level * 18 } : {}
@@ -188,6 +237,23 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
       }
     }
   }, [outline, route.params])
+
+  // Ensure the notes target always points to a valid item when outline data changes
+  useEffect(() => {
+    if (outlineItems.length === 0) {
+      if (notesItemId) setNotesItemId(undefined)
+      return
+    }
+
+    if (!notesItemId || !outlineItems.some((item) => item.id === notesItemId)) {
+      const firstUnchecked = outlineItems.find((item) => !checkedItems.has(item.id))
+      setNotesItemId((firstUnchecked || outlineItems[0]).id)
+    }
+  }, [outlineItems, notesItemId, checkedItems])
+
+  const activeNotesItem = notesItemId
+    ? outlineItems.find((item) => item.id === notesItemId)
+    : undefined
 
   return (
     <Screen
@@ -274,19 +340,45 @@ export const LectureRecordingScreen: FC<LectureRecordingScreenProps> = (props) =
           />
         </View>
 
-        {/* Outline Checklist */}
-        <View style={$checklistContainer}>
-          <Text style={$checklistHeader}>
-            Tap items as you cover them ({checkedItems.size}/{outline.items.length} completed)
-          </Text>
-          <FlatList
-            data={outline.items}
-            renderItem={renderOutlineItem}
-            keyExtractor={(item) => item.id}
-            style={$itemsList}
-            contentContainerStyle={$itemsListContent}
-            scrollEnabled={true}
-          />
+        <View style={$splitContainer}>
+          {/* Outline Checklist */}
+          <View style={$checklistPane}>
+            <Text style={$checklistHeader}>
+              Tap items as you cover them ({checkedItems.size}/{outline.items.length} completed)
+            </Text>
+            <FlatList
+              data={outline.items}
+              renderItem={renderOutlineItem}
+              keyExtractor={(item) => item.id}
+              style={$itemsList}
+              contentContainerStyle={$itemsListContent}
+              scrollEnabled={true}
+            />
+          </View>
+
+          <View style={$notesPane}>
+            <Text style={$notesLabel}>Notes</Text>
+            {activeNotesItem ? (
+              <>
+                <Text style={$notesTitle}>{getDisplayTitle(activeNotesItem.title)}</Text>
+                {activeNotesItem.notes?.trim() ? (
+                  <ScrollView style={$notesScroll} contentContainerStyle={$notesScrollContent}>
+                    <Markdown style={markdownStyles} rules={markdownRules}>
+                      {activeNotesItem.notes}
+                    </Markdown>
+                  </ScrollView>
+                ) : (
+                  <View style={$notesEmptyState}>
+                    <Text style={$notesEmptyStateText}>No notes for this item.</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={$notesEmptyState}>
+                <Text style={$notesEmptyStateText}>All items are completed.</Text>
+              </View>
+            )}
+          </View>
         </View>
         {/* Paused Backdrop - full screen overlay when paused */}
         {isPaused && (
@@ -371,6 +463,82 @@ const $stopButton: ViewStyle = {
 
 const $checklistContainer: ViewStyle = {
   flex: 1,
+}
+
+const $splitContainer: ViewStyle = {
+  flex: 1,
+  flexDirection: "row",
+  gap: spacing.sm,
+}
+
+const $checklistPane: ViewStyle = {
+  flex: 1.1,
+}
+
+const $notesPane: ViewStyle = {
+  flex: 1,
+  borderLeftWidth: 2,
+  borderLeftColor: "#162033",
+  paddingLeft: spacing.sm,
+}
+
+const $notesLabel: TextStyle = {
+  color: "#4A5563",
+  fontSize: 12,
+  fontWeight: "600",
+  marginBottom: spacing.xs,
+  textTransform: "uppercase",
+}
+
+const $notesTitle: TextStyle = {
+  color: "#162033",
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: spacing.xs,
+}
+
+const $notesScroll: ViewStyle = {
+  flex: 1,
+}
+
+const $notesScrollContent: ViewStyle = {
+  paddingBottom: spacing.md,
+}
+
+const $notesEmptyState: ViewStyle = {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: spacing.sm,
+}
+
+const $notesEmptyStateText: TextStyle = {
+  textAlign: "center",
+  color: "#666",
+}
+
+const $codeBlockWrapper: ViewStyle = {
+  marginVertical: spacing.xs,
+  borderWidth: 1,
+  borderColor: "#162033",
+  borderRadius: 8,
+  overflow: "hidden",
+  backgroundColor: "#282C34",
+}
+
+const $codeHighlighterContainer: ViewStyle = {
+  padding: spacing.sm,
+}
+
+const $codeHighlighterContentContainer: ViewStyle = {
+  minWidth: "100%",
+}
+
+const $codeBlockText: TextStyle = {
+  color: "#ABB2BF",
+  fontFamily: "jetBrainsMono",
+  fontSize: 13,
+  lineHeight: 20,
 }
 
 const $pausedBackdrop: ViewStyle = {
@@ -497,3 +665,39 @@ const $checkmark: TextStyle = {
   fontSize: 18,
   fontWeight: "bold",
 }
+
+const markdownStyles = {
+  body: {
+    color: "#273041",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  paragraph: {
+    marginTop: 0,
+    marginBottom: spacing.xs,
+  },
+  heading1: {
+    color: "#162033",
+    fontSize: 18,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  heading2: {
+    color: "#162033",
+    fontSize: 16,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  heading3: {
+    color: "#162033",
+    fontSize: 15,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  code_inline: {
+    backgroundColor: "#FFE8D6",
+    color: "#162033",
+    borderRadius: 4,
+    paddingHorizontal: 4,
+  },
+} as const

@@ -36,7 +36,11 @@ export type AppStackParamList = {
   OutlinePreview: { outlineId: string }
   OutlineEditor: { outlineId: string }
   LectureRecording: {
-    outline: { id: string; title: string; items: Array<{ id: string; title: string }> }
+    outline: {
+      id: string
+      title: string
+      items: Array<{ id: string; title: string; notes?: string }>
+    }
   }
   NotionOAuth: undefined
   NotionImport: undefined

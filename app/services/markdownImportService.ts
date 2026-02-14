@@ -150,7 +150,7 @@ export function importFromText(content: string, options: ImportOptions = {}): Im
 export function previewMarkdown(content: string): {
   isValid: boolean
   parseResult: MarkdownParseResult
-  previewOutline?: { title: string; items: Array<{ id: string; title: string }> }
+  previewOutline?: { title: string; items: Array<{ id: string; title: string; notes?: string }> }
   errors: string[]
 } {
   try {

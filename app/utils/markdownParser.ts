@@ -10,6 +10,7 @@
 export interface ParsedMarkdownItem {
   id: string
   title: string
+  notes?: string
   completed?: boolean
   level: number
   children?: ParsedMarkdownItem[]
@@ -48,6 +49,7 @@ function parseMarkdownLine(
   lineNumber: number,
 ): {
   item: ParsedMarkdownItem | null
+  isChecklist?: boolean
   error?: string
 } {
   const trimmedLine = line.trim()
@@ -71,6 +73,7 @@ function parseMarkdownLine(
         level,
         children: [],
       },
+      isChecklist: true,
     }
   }
 
@@ -84,6 +87,7 @@ function parseMarkdownLine(
         level,
         children: [],
       },
+      isChecklist: false,
     }
   }
 
@@ -102,6 +106,48 @@ function parseMarkdownLine(
   }
 
   return { item: null }
+}
+
+function countLeadingWhitespace(line: string): number {
+  const match = line.match(/^(\s*)/)
+  if (!match) return 0
+  return match[1].replace(/\t/g, "  ").length
+}
+
+function attachNotesToItems(
+  lines: string[],
+  items: ParsedMarkdownItem[],
+  itemLineIndices: number[],
+): void {
+  for (let index = 0; index < items.length; index++) {
+    const item = items[index]
+    const startLine = itemLineIndices[index] + 1
+    const endLine = index + 1 < itemLineIndices.length ? itemLineIndices[index + 1] : lines.length
+
+    if (startLine >= endLine) continue
+
+    const segment = lines.slice(startLine, endLine)
+    const nonEmptyIndents = segment
+      .filter((line) => line.trim().length > 0)
+      .map((line) => countLeadingWhitespace(line))
+
+    const minIndent = nonEmptyIndents.length > 0 ? Math.min(...nonEmptyIndents) : 0
+    const normalized = segment
+      .map((line) => {
+        if (line.trim().length === 0) return ""
+        const leading = countLeadingWhitespace(line)
+        if (leading >= minIndent) {
+          return line.slice(minIndent)
+        }
+        return line.trimStart()
+      })
+      .join("\n")
+      .trim()
+
+    if (normalized.length > 0) {
+      item.notes = normalized
+    }
+  }
 }
 
 /**
@@ -169,6 +215,17 @@ export function parseMarkdownList(content: string): MarkdownParseResult {
   const lines = content.split("\n")
   const errors: string[] = []
   const flatItems: ParsedMarkdownItem[] = []
+  const itemLineIndices: number[] = []
+  const itemStack: ParsedMarkdownItem[] = []
+
+  function findParentForLevel(level: number): ParsedMarkdownItem | undefined {
+    for (let index = itemStack.length - 1; index >= 0; index--) {
+      if (itemStack[index].level < level) {
+        return itemStack[index]
+      }
+    }
+    return undefined
+  }
 
   // Extract potential title
   const title = extractTitle(lines)
@@ -177,18 +234,48 @@ export function parseMarkdownList(content: string): MarkdownParseResult {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     const parseResult = parseMarkdownLine(line, i)
+    const lineLevel = getIndentationLevel(line)
+    const parentForLine = findParentForLevel(lineLevel)
+    const parentIsChecklist = parentForLine?.completed !== undefined
+    const isNestedLine = lineLevel > 0
+    const isPotentialListMarker =
+      line.trimStart().startsWith("-") || line.trimStart().startsWith("*")
 
     if (parseResult.error) {
-      errors.push(parseResult.error)
+      const shouldSuppressNestedListError =
+        isNestedLine && parentIsChecklist && isPotentialListMarker && parseResult.item === null
+
+      if (!shouldSuppressNestedListError) {
+        errors.push(parseResult.error)
+      }
     }
 
     if (parseResult.item) {
-      flatItems.push(parseResult.item)
+      const item = parseResult.item
+
+      while (itemStack.length > 0 && itemStack[itemStack.length - 1].level >= item.level) {
+        itemStack.pop()
+      }
+
+      const parent = itemStack[itemStack.length - 1]
+      const parentIsChecklistItem = parent?.completed !== undefined
+      const isNestedItem = item.level > 0
+
+      if (parseResult.isChecklist === false && isNestedItem && parentIsChecklistItem) {
+        continue
+      }
+
+      flatItems.push(item)
+      itemLineIndices.push(i)
+      itemStack.push(item)
     }
   }
 
   // Build nested structure
   const nestedItems = buildNestedStructure(flatItems)
+
+  // Attach notes to flattened list items, then nested items reference same objects
+  attachNotesToItems(lines, flatItems, itemLineIndices)
 
   return {
     items: nestedItems,
@@ -236,8 +323,8 @@ export function validateMarkdownItems(items: ParsedMarkdownItem[]): {
  */
 export function flattenMarkdownItems(
   items: ParsedMarkdownItem[],
-): Array<{ id: string; title: string }> {
-  const result: Array<{ id: string; title: string }> = []
+): Array<{ id: string; title: string; notes?: string }> {
+  const result: Array<{ id: string; title: string; notes?: string }> = []
 
   function flattenRecursively(itemList: ParsedMarkdownItem[], prefix = "") {
     for (const item of itemList) {
@@ -246,6 +333,7 @@ export function flattenMarkdownItems(
       result.push({
         id: item.id,
         title,
+        ...(item.notes ? { notes: item.notes } : {}),
       })
 
       if (item.children && item.children.length > 0) {
@@ -266,7 +354,7 @@ export function convertToOutlineFormat(
   customTitle?: string,
 ): {
   title: string
-  items: Array<{ id: string; title: string }>
+  items: Array<{ id: string; title: string; notes?: string }>
 } {
   const title = customTitle || parseResult.title || "Imported Outline"
   const items = flattenMarkdownItems(parseResult.items)

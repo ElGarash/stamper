@@ -4,6 +4,7 @@ import {
   View,
   ViewStyle,
   TextStyle,
+  ImageStyle,
   Alert,
   RefreshControl,
   TouchableOpacity,
@@ -206,6 +207,8 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
       button="Import Markdown"
       buttonOnPress={handleImportMarkdown}
       heading="No Outlines"
+      style={themed($emptyStateContainer)}
+      imageStyle={$emptyStateImage}
     />
   )
 
@@ -233,16 +236,16 @@ export const OutlinesListScreen: FC<OutlinesListScreenProps> = function Outlines
       <Header title="Outlines" />
 
       <View style={themed($contentContainer)}>
+        <View style={themed($headerContainer)}>
+          <TouchableOpacity style={themed($importIcon)} onPress={handleImportMarkdown}>
+            <ListPlus size={24} color={theme.colors.text} />
+          </TouchableOpacity>
+        </View>
+
         {outlines.length === 0 ? (
           renderEmptyState()
         ) : (
           <>
-            <View style={themed($headerContainer)}>
-              <TouchableOpacity style={themed($importIcon)} onPress={handleImportMarkdown}>
-                <ListPlus size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
             <FlatList
               data={outlines}
               renderItem={renderOutlineItem}
@@ -294,6 +297,17 @@ const $listContainer: ViewStyle = {
 
 const $listContent: ViewStyle = {
   paddingBottom: spacing.lg,
+}
+
+const $emptyStateContainer: ViewStyle = {
+  flex: 1,
+  justifyContent: "center",
+}
+
+const $emptyStateImage: ImageStyle = {
+  width: 220,
+  height: 220,
+  resizeMode: "contain",
 }
 
 // Neo-brutalist list item styling

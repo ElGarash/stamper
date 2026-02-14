@@ -139,6 +139,59 @@ describe("markdownParser", () => {
       expect(result.title).toBeUndefined()
       expect(result.items).toHaveLength(2)
     })
+
+    it("should attach markdown notes to each item", () => {
+      const content = `# Notes Outline
+- Item 1
+  Intro paragraph.
+
+  \`\`\`ts
+  const topic = "notes"
+  \`\`\`
+- Item 2
+  Follow-up notes`
+
+      const result = parseMarkdownList(content)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.items[0].notes).toContain("Intro paragraph.")
+      expect(result.items[0].notes).toContain("```ts")
+      expect(result.items[0].notes).toContain('const topic = "notes"')
+      expect(result.items[1].notes).toBe("Follow-up notes")
+    })
+
+    it("should treat nested non-checklist blocks under checklist items as notes", () => {
+      const content = `- [ ] Predicates backtracking
+    We start by defining this
+
+    \`\`\`python
+    print("hello world")
+    \`\`\`
+
+    Then we move into:
+
+    - 1
+    - 2
+    - 3
+    - 5
+    -
+- [ ] Terms, variables, and values
+    - [ ] A term is a variable or a value`
+
+      const result = parseMarkdownList(content)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0].title).toBe("Predicates backtracking")
+      expect(result.items[0].children).toHaveLength(0)
+      expect(result.items[0].notes).toContain("We start by defining this")
+      expect(result.items[0].notes).toContain("```python")
+      expect(result.items[0].notes).toContain("- 1")
+      expect(result.items[0].notes).toContain("- 5")
+      expect(result.items[1].children).toHaveLength(1)
+      expect(result.items[1].children![0].title).toBe("A term is a variable or a value")
+      expect(result.items[1].children![0]).toHaveProperty("completed", false)
+    })
   })
 
   describe("validateMarkdownItems", () => {
@@ -248,6 +301,24 @@ describe("markdownParser", () => {
       expect(result[0]).toEqual({ id: "1", title: "Level 0" })
       expect(result[1]).toEqual({ id: "2", title: "  Level 1" })
       expect(result[2]).toEqual({ id: "3", title: "    Level 2" })
+    })
+
+    it("should preserve notes when flattening", () => {
+      const items: ParsedMarkdownItem[] = [
+        {
+          id: "1",
+          title: "Parent",
+          level: 0,
+          notes: "Parent notes",
+          children: [{ id: "2", title: "Child", level: 1, notes: "Child notes" }],
+        },
+      ]
+
+      const result = flattenMarkdownItems(items)
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({ id: "1", title: "Parent", notes: "Parent notes" })
+      expect(result[1]).toEqual({ id: "2", title: "  Child", notes: "Child notes" })
     })
   })
 

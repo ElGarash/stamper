@@ -3,7 +3,7 @@
   "slug": "stamper",
   "scheme": "stamper",
   "version": "0.0.1",
-  "orientation": "portrait",
+  "orientation": "default",
   "userInterfaceStyle": "automatic",
   "icon": "./assets/images/logo.png",
   "updates": {
