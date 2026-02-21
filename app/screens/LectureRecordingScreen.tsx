@@ -461,10 +461,6 @@ const $stopButton: ViewStyle = {
   backgroundColor: "#FF3B30",
 }
 
-const $checklistContainer: ViewStyle = {
-  flex: 1,
-}
-
 const $splitContainer: ViewStyle = {
   flex: 1,
   flexDirection: "row",

@@ -11,6 +11,7 @@ import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import {
   importFromFile,
   importFromClipboard,
+  importFromGistUrl,
   importFromText,
   previewMarkdown,
   hasMarkdownInClipboard,
@@ -20,14 +21,15 @@ import { addOutline } from "@/services/outlineStorage"
 import { colors } from "@/theme/colors"
 import { spacing } from "@/theme/spacing"
 
-interface Props extends AppStackScreenProps<"MarkdownImport"> {}
+interface Props extends AppStackScreenProps<"MarkdownImport"> { }
 
-type ImportMode = "file" | "clipboard" | "manual"
+type ImportMode = "file" | "clipboard" | "manual" | "gist"
 
 export const MarkdownImportScreen = ({ navigation }: Props) => {
   const [isLoading, setIsLoading] = useState(false)
   const [importMode, setImportMode] = useState<ImportMode | null>(null)
   const [manualText, setManualText] = useState("")
+  const [gistUrl, setGistUrl] = useState("")
   const [previewData, setPreviewData] = useState<any>(null)
   const [hasClipboardContent, setHasClipboardContent] = useState(false)
 
@@ -115,6 +117,23 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
     }
   }, [manualText, handleImportResult])
 
+  const handleGistImport = useCallback(async () => {
+    if (!gistUrl.trim()) {
+      Alert.alert("Error", "Please enter a GitHub Gist URL")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const result = await importFromGistUrl(gistUrl)
+      handleImportResult(result)
+    } catch {
+      Alert.alert("Error", "Failed to import from GitHub Gist URL")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [gistUrl, handleImportResult])
+
   const handlePreview = useCallback(() => {
     if (!manualText.trim()) {
       setPreviewData(null)
@@ -140,6 +159,16 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
           </View>
         }
         onPress={hasClipboardContent ? () => setImportMode("clipboard") : undefined}
+      />
+
+      <Card
+        ContentComponent={
+          <View>
+            <Text preset="subheading">🔗 Import from GitHub Gist</Text>
+            <Text style={styles.descriptionText}>Paste a GitHub Gist URL to import markdown</Text>
+          </View>
+        }
+        onPress={() => setImportMode("gist")}
       />
 
       <Card
@@ -275,6 +304,44 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
     </View>
   )
 
+  const renderGistImport = () => (
+    <View>
+      <Text preset="heading" style={styles.headingText}>
+        Import from GitHub Gist
+      </Text>
+      <Text style={styles.manualDescriptionText}>
+        Paste a gist URL that contains markdown content
+      </Text>
+
+      <TextField
+        placeholder="https://gist.github.com/username/gist-id"
+        value={gistUrl}
+        onChangeText={setGistUrl}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="url"
+        containerStyle={{ marginBottom: spacing.md }}
+      />
+
+      <Button
+        text="Import from Gist URL"
+        onPress={handleGistImport}
+        disabled={isLoading || !gistUrl.trim()}
+        style={{ marginBottom: spacing.md }}
+      />
+
+      <Button
+        text="Back"
+        preset="default"
+        onPress={() => {
+          setImportMode(null)
+          setGistUrl("")
+        }}
+        disabled={isLoading}
+      />
+    </View>
+  )
+
   const renderContent = () => {
     switch (importMode) {
       case "file":
@@ -283,6 +350,8 @@ export const MarkdownImportScreen = ({ navigation }: Props) => {
         return renderClipboardImport()
       case "manual":
         return renderManualImport()
+      case "gist":
+        return renderGistImport()
       default:
         return renderImportModeSelection()
     }

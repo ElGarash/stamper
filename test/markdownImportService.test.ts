@@ -2,7 +2,11 @@
  * Integration tests for markdown import service
  */
 
-import { importFromText, previewMarkdown } from "../app/services/markdownImportService"
+import {
+  importFromGistUrl,
+  importFromText,
+  previewMarkdown,
+} from "../app/services/markdownImportService"
 
 // Mock the dependencies
 jest.mock("@react-native-clipboard/clipboard", () => ({
@@ -14,6 +18,105 @@ jest.mock("@react-native-documents/picker", () => ({
 }))
 
 describe("markdownImportService", () => {
+  describe("importFromGistUrl", () => {
+    const mockFetch = jest.fn()
+
+    beforeEach(() => {
+      ; (global as any).fetch = mockFetch
+      mockFetch.mockReset()
+    })
+
+    it("should import from a gist page URL via GitHub API", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          description: "Lecture gist",
+          files: {
+            "outline.md": {
+              filename: "outline.md",
+              type: "text/markdown",
+              content: "# Gist Outline\n- Item 1\n- Item 2",
+            },
+          },
+        }),
+      })
+
+      const result = await importFromGistUrl(
+        "https://gist.github.com/octocat/0123456789abcdef0123456789abcdef",
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.outline).toBeDefined()
+      expect(result.outline!.title).toBe("outline.md")
+      expect(result.outline!.items.length).toBeGreaterThan(0)
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.github.com/gists/0123456789abcdef0123456789abcdef",
+      )
+    })
+
+    it("should import directly from a raw gist URL", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => "# Raw Gist\n- A\n- B",
+      })
+
+      const result = await importFromGistUrl(
+        "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/outline.md",
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.outline).toBeDefined()
+      expect(result.outline!.title).toBe("Raw Gist")
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/outline.md",
+      )
+    })
+
+    it("should return error for invalid gist URL", async () => {
+      const result = await importFromGistUrl("https://example.com/not-a-gist")
+
+      expect(result.success).toBe(false)
+      expect(result.errors).toContain("Invalid GitHub Gist URL")
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it("should fetch raw file when gist API content is truncated", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            files: {
+              "large.md": {
+                filename: "large.md",
+                type: "text/markdown",
+                content: "",
+                truncated: true,
+                raw_url: "https://gist.githubusercontent.com/octocat/id/raw/large.md",
+              },
+            },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => "# Large\n- imported",
+        })
+
+      const result = await importFromGistUrl(
+        "https://gist.github.com/octocat/0123456789abcdef0123456789abcdef",
+      )
+
+      expect(result.success).toBe(true)
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        "https://api.github.com/gists/0123456789abcdef0123456789abcdef",
+      )
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        "https://gist.githubusercontent.com/octocat/id/raw/large.md",
+      )
+    })
+  })
+
   describe("importFromText", () => {
     it("should successfully import valid markdown", () => {
       const markdownContent = `# Test Outline

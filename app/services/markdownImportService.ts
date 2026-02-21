@@ -28,6 +28,76 @@ export interface ImportOptions {
   validateItems?: boolean
 }
 
+interface GistApiFile {
+  filename?: string
+  type?: string
+  content?: string
+  raw_url?: string
+  truncated?: boolean
+}
+
+interface GistApiResponse {
+  description?: string
+  files?: Record<string, GistApiFile>
+}
+
+function extractGistId(input: string): string | null {
+  try {
+    const parsed = new URL(input)
+    const pathSegments = parsed.pathname.split("/").filter(Boolean)
+
+    if (parsed.hostname === "api.github.com" && pathSegments[0] === "gists" && pathSegments[1]) {
+      return pathSegments[1]
+    }
+
+    if (parsed.hostname === "gist.githubusercontent.com" && pathSegments[1]) {
+      return pathSegments[1]
+    }
+
+    if (parsed.hostname === "gist.github.com" && pathSegments.length > 0) {
+      const possibleId = [...pathSegments]
+        .reverse()
+        .find((segment) => /[0-9a-fA-F]{8,}/.test(segment))
+      if (possibleId) {
+        return possibleId
+      }
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+function isRawGistUrl(input: string): boolean {
+  try {
+    const parsed = new URL(input)
+    return parsed.hostname === "gist.githubusercontent.com"
+  } catch {
+    return false
+  }
+}
+
+function pickPreferredGistFile(files: GistApiFile[]): GistApiFile | undefined {
+  const markdownByName = files.find((file) => {
+    const name = file.filename?.toLowerCase() || ""
+    return (
+      name.endsWith(".md") ||
+      name.endsWith(".markdown") ||
+      name.endsWith(".mdown") ||
+      name.endsWith(".mkdn") ||
+      name.endsWith(".txt")
+    )
+  })
+
+  if (markdownByName) return markdownByName
+
+  const markdownByType = files.find((file) => file.type?.toLowerCase() === "text/markdown")
+  if (markdownByType) return markdownByType
+
+  return files[0]
+}
+
 /**
  * Import markdown content from a file using the document picker
  */
@@ -87,6 +157,105 @@ export async function importFromClipboard(options: ImportOptions = {}): Promise<
       errors: [
         `Clipboard import failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       ],
+    }
+  }
+}
+
+/**
+ * Import markdown content from a GitHub Gist URL
+ */
+export async function importFromGistUrl(
+  gistUrl: string,
+  options: ImportOptions = {},
+): Promise<ImportResult> {
+  try {
+    const trimmedUrl = gistUrl.trim()
+
+    if (!trimmedUrl) {
+      return {
+        success: false,
+        errors: ["Please enter a GitHub Gist URL"],
+      }
+    }
+
+    if (isRawGistUrl(trimmedUrl)) {
+      const rawResponse = await fetch(trimmedUrl)
+      if (!rawResponse.ok) {
+        return {
+          success: false,
+          errors: [`Gist import failed: HTTP ${rawResponse.status}`],
+        }
+      }
+
+      const rawContent = await rawResponse.text()
+      return importFromText(rawContent, {
+        ...options,
+        customTitle: options.customTitle,
+      })
+    }
+
+    const gistId = extractGistId(trimmedUrl)
+    if (!gistId) {
+      return {
+        success: false,
+        errors: ["Invalid GitHub Gist URL"],
+      }
+    }
+
+    const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`)
+    if (!gistResponse.ok) {
+      return {
+        success: false,
+        errors: [`Gist import failed: HTTP ${gistResponse.status}`],
+      }
+    }
+
+    const gistData = (await gistResponse.json()) as GistApiResponse
+    const files = Object.values(gistData.files || {})
+
+    if (!files.length) {
+      return {
+        success: false,
+        errors: ["The gist has no files"],
+      }
+    }
+
+    const selectedFile = pickPreferredGistFile(files)
+    if (!selectedFile) {
+      return {
+        success: false,
+        errors: ["Could not find a file to import in this gist"],
+      }
+    }
+
+    let content = selectedFile.content || ""
+
+    if ((!content || selectedFile.truncated) && selectedFile.raw_url) {
+      const rawFileResponse = await fetch(selectedFile.raw_url)
+      if (!rawFileResponse.ok) {
+        return {
+          success: false,
+          errors: [`Gist import failed: HTTP ${rawFileResponse.status}`],
+        }
+      }
+      content = await rawFileResponse.text()
+    }
+
+    if (!content.trim()) {
+      return {
+        success: false,
+        errors: ["The selected gist file is empty"],
+      }
+    }
+
+    return importFromText(content, {
+      ...options,
+      customTitle: options.customTitle || selectedFile.filename || gistData.description,
+    })
+  } catch (error) {
+    return {
+      success: false,
+      errors: [`Gist import failed: ${error instanceof Error ? error.message : "Unknown error"}`],
     }
   }
 }
