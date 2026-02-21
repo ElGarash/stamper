@@ -41,6 +41,87 @@ interface GistApiResponse {
   files?: Record<string, GistApiFile>
 }
 
+function isAbsoluteOrSpecialUrl(url: string): boolean {
+  return (
+    /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url) ||
+    url.startsWith("//") ||
+    url.startsWith("#") ||
+    url.startsWith("/")
+  )
+}
+
+function convertHtmlImagesToMarkdown(content: string): string {
+  return content.replace(/<img\b[^>]*>/gi, (tag) => {
+    const srcMatch = tag.match(/\ssrc\s*=\s*(["'])(.*?)\1/i)
+    if (!srcMatch || !srcMatch[2]) return tag
+
+    const altMatch = tag.match(/\salt\s*=\s*(["'])(.*?)\1/i)
+    const altText = (altMatch?.[2] || "image").replace(/\]/g, "\\]")
+    const src = srcMatch[2]
+
+    return `![${altText}](${src})`
+  })
+}
+
+function normalizeMarkdownAssetUrls(content: string, baseUrl?: string): string {
+  const withMarkdownImages = convertHtmlImagesToMarkdown(content)
+
+  if (!baseUrl) return withMarkdownImages
+
+  let parsedBase: URL
+  try {
+    parsedBase = new URL(baseUrl)
+  } catch {
+    return content
+  }
+
+  return withMarkdownImages
+    .replace(/(!?\[[^\]]*\]\()([^\)]+)(\))/g, (_full, prefix, destination, suffix) => {
+      const rawDestination = String(destination).trim()
+
+      let urlToken = rawDestination
+      let trailing = ""
+
+      if (rawDestination.startsWith("<")) {
+        const closing = rawDestination.indexOf(">")
+        if (closing > 0) {
+          urlToken = rawDestination.slice(1, closing)
+          trailing = rawDestination.slice(closing + 1)
+        }
+      } else {
+        const firstWhitespace = rawDestination.search(/\s/)
+        if (firstWhitespace > -1) {
+          urlToken = rawDestination.slice(0, firstWhitespace)
+          trailing = rawDestination.slice(firstWhitespace)
+        }
+      }
+
+      if (!urlToken || isAbsoluteOrSpecialUrl(urlToken)) {
+        return `${prefix}${destination}${suffix}`
+      }
+
+      try {
+        const resolved = new URL(urlToken, parsedBase).toString()
+        const rebuilt = rawDestination.startsWith("<") ? `<${resolved}>${trailing}` : `${resolved}${trailing}`
+        return `${prefix}${rebuilt}${suffix}`
+      } catch {
+        return `${prefix}${destination}${suffix}`
+      }
+    })
+    .replace(/(<img\b[^>]*\ssrc=["'])([^"']+)(["'][^>]*>)/gi, (_full, prefix, source, suffix) => {
+      const src = String(source).trim()
+      if (!src || isAbsoluteOrSpecialUrl(src)) {
+        return `${prefix}${source}${suffix}`
+      }
+
+      try {
+        return `${prefix}${new URL(src, parsedBase).toString()}${suffix}`
+      } catch {
+        return `${prefix}${source}${suffix}`
+      }
+    })
+}
+
 function extractGistId(input: string): string | null {
   try {
     const parsed = new URL(input)
@@ -188,7 +269,8 @@ export async function importFromGistUrl(
       }
 
       const rawContent = await rawResponse.text()
-      return importFromText(rawContent, {
+      const normalizedContent = normalizeMarkdownAssetUrls(rawContent, trimmedUrl)
+      return importFromText(normalizedContent, {
         ...options,
         customTitle: options.customTitle,
       })
@@ -248,7 +330,9 @@ export async function importFromGistUrl(
       }
     }
 
-    return importFromText(content, {
+    const normalizedContent = normalizeMarkdownAssetUrls(content, selectedFile.raw_url)
+
+    return importFromText(normalizedContent, {
       ...options,
       customTitle: options.customTitle || selectedFile.filename || gistData.description,
     })

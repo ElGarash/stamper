@@ -72,6 +72,68 @@ describe("markdownImportService", () => {
       )
     })
 
+    it("should resolve relative markdown image URLs for gist API imports", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          files: {
+            "outline.md": {
+              filename: "outline.md",
+              type: "text/markdown",
+              raw_url:
+                "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/abc123/outline.md",
+              content: "- Topic\n  ![diagram](./images/diagram.png)",
+            },
+          },
+        }),
+      })
+
+      const result = await importFromGistUrl(
+        "https://gist.github.com/octocat/0123456789abcdef0123456789abcdef",
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.outline).toBeDefined()
+      expect(result.outline!.items[0].notes).toContain(
+        "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/abc123/images/diagram.png",
+      )
+    })
+
+    it("should resolve relative markdown image URLs for raw gist imports", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => "- Topic\n  ![diagram](images/diagram.png)",
+      })
+
+      const result = await importFromGistUrl(
+        "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/outline.md",
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.outline).toBeDefined()
+      expect(result.outline!.items[0].notes).toContain(
+        "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/images/diagram.png",
+      )
+    })
+
+    it("should convert html img tags in gist notes to markdown images", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () =>
+          '- Topic\n  <img width="628" height="404" alt="image" src="https://gist.github.com/user-attachments/assets/35d4fe75-2d0a-46b0-885c-84330c121dbe" />',
+      })
+
+      const result = await importFromGistUrl(
+        "https://gist.githubusercontent.com/octocat/0123456789abcdef/raw/outline.md",
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.outline).toBeDefined()
+      expect(result.outline!.items[0].notes).toContain(
+        "![image](https://gist.github.com/user-attachments/assets/35d4fe75-2d0a-46b0-885c-84330c121dbe)",
+      )
+    })
+
     it("should return error for invalid gist URL", async () => {
       const result = await importFromGistUrl("https://example.com/not-a-gist")
 

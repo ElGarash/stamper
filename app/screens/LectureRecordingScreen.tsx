@@ -3,10 +3,12 @@ import {
   FlatList,
   View,
   ViewStyle,
+  ImageStyle,
   TextStyle,
   Alert,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from "react-native"
 import { TouchableWithoutFeedback } from "react-native"
 import { SquarePause, SquarePlay, SquareStop } from "lucide-react-native"
@@ -49,6 +51,14 @@ const markdownRules = {
         </MarkdownCodeHighlighter>
       </View>
     )
+  },
+  image: (node: any) => {
+    const source = node?.attributes?.src
+    if (!source || typeof source !== "string") return null
+
+    const key = node?.key || `image_${source}`
+
+    return <Image key={key} source={{ uri: source }} style={$markdownImage} resizeMode="contain" />
   },
 }
 
@@ -697,3 +707,9 @@ const markdownStyles = {
     paddingHorizontal: 4,
   },
 } as const
+
+const $markdownImage: ImageStyle = {
+  width: "100%",
+  minHeight: 180,
+  marginVertical: spacing.xs,
+}
